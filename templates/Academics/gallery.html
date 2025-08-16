@@ -1,0 +1,57 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Gallery | Siddhartha Academy{% endblock %}
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-white via-red-50 to-red-100 py-12 px-4">
+  <div class="max-w-7xl mx-auto">
+    <!-- Heading -->
+    <h1 class="text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-12 tracking-tight drop-shadow">
+      Gallery
+    </h1>
+
+    <!-- Gallery Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Example image card -->
+      <div class="overflow-hidden rounded-3xl shadow-lg bg-white hover:shadow-2xl transition duration-300">
+        <img src="{% static 'src/gallery/image1.webp' %}" alt="Gallery Image 1" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
+        <div class="p-4 text-center text-gray-700 font-semibold">
+          School Event 2024
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-3xl shadow-lg bg-white hover:shadow-2xl transition duration-300">
+        <img src="{% static 'src/gallery/image2.webp' %}" alt="Gallery Image 2" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
+        <div class="p-4 text-center text-gray-700 font-semibold">
+          Science Fair
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-3xl shadow-lg bg-white hover:shadow-2xl transition duration-300">
+        <img src="{% static 'src/gallery/image3.webp' %}" alt="Gallery Image 3" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
+        <div class="p-4 text-center text-gray-700 font-semibold">
+          Sports Day
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-3xl shadow-lg bg-white hover:shadow-2xl transition duration-300">
+        <img src="{% static 'src/gallery/image4.webp' %}" alt="Gallery Image 4" class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
+        <div class="p-4 text-center text-gray-700 font-semibold">
+          Cultural Program
+        </div>
+      </div>
+
+      <!-- Add more image cards as needed -->
+
+    </div>
+
+    <!-- Optional: Pagination or load more button -->
+    <div class="mt-12 flex justify-center">
+      <button class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-full shadow transition">
+        Load More
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

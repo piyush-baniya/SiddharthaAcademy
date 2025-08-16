@@ -1,0 +1,163 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Class Routine | Siddhartha Academy{% endblock %}
+{% block content %}
+
+<div 
+  class="min-h-screen w-full bg-gradient-to-br from-white via-red-50 to-red-100 py-12 px-4"
+  id="routinePage"
+>
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Heading -->
+    <h1 class="text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-12 tracking-tight drop-shadow
+               opacity-0 translate-y-6 transition-all duration-700 fade-up">
+      Class Routine
+    </h1>
+
+    <!-- Routine Selection Form -->
+    <form action="#" method="GET" class="max-w-sm mx-auto mb-10
+                 opacity-0 translate-y-6 transition-all duration-700 fade-up">
+      <label for="classSelect" class="block text-lg font-semibold text-red-700 mb-2">Select Class:</label>
+      <select id="classSelect" name="class" class="w-full border border-red-400 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+        <option value="" selected disabled>Choose your class</option>
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
+        <option value="4">Class 4</option>
+        <option value="5">Class 5</option>
+        <option value="6">Class 6</option>
+        <option value="7">Class 7</option>
+        <option value="8">Class 8</option>
+        <option value="9">Class 9</option>
+        <option value="10">Class 10</option>
+      </select>
+      <button type="submit" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
+        View Routine
+      </button>
+    </form>
+
+    <!-- Routine Table Wrapper (scroll on small screens) -->
+    <div class="overflow-x-auto shadow-lg rounded-lg bg-white p-6
+                opacity-0 translate-y-6 transition-all duration-700 fade-up">
+
+      <!-- Routine Table -->
+      <table class="min-w-full border-collapse table-auto text-left">
+        <thead>
+          <tr class="bg-red-600 text-white text-lg">
+            <th class="py-3 px-4 sticky top-0">Period / Day</th>
+            <th class="py-3 px-4 sticky top-0">Monday</th>
+            <th class="py-3 px-4 sticky top-0">Tuesday</th>
+            <th class="py-3 px-4 sticky top-0">Wednesday</th>
+            <th class="py-3 px-4 sticky top-0">Thursday</th>
+            <th class="py-3 px-4 sticky top-0">Friday</th>
+            <th class="py-3 px-4 sticky top-0">Saturday</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-800 font-medium">
+
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 1</td>
+            <td class="py-3 px-4">Math</td>
+            <td class="py-3 px-4">Science</td>
+            <td class="py-3 px-4">English</td>
+            <td class="py-3 px-4">Nepali</td>
+            <td class="py-3 px-4">Computer</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 2</td>
+            <td class="py-3 px-4">English</td>
+            <td class="py-3 px-4">Math</td>
+            <td class="py-3 px-4">Science</td>
+            <td class="py-3 px-4">Computer</td>
+            <td class="py-3 px-4">Nepali</td>
+            <td class="py-3 px-4">Art</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 3</td>
+            <td class="py-3 px-4">Science</td>
+            <td class="py-3 px-4">English</td>
+            <td class="py-3 px-4">Math</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Computer</td>
+            <td class="py-3 px-4">Music</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 4</td>
+            <td class="py-3 px-4">Nepali</td>
+            <td class="py-3 px-4">Social Studies</td>
+            <td class="py-3 px-4">Computer</td>
+            <td class="py-3 px-4">English</td>
+            <td class="py-3 px-4">Math</td>
+            <td class="py-3 px-4">Science</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 5</td>
+            <td class="py-3 px-4">Computer</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Social Studies</td>
+            <td class="py-3 px-4">Math</td>
+            <td class="py-3 px-4">English</td>
+            <td class="py-3 px-4">Nepali</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 6</td>
+            <td class="py-3 px-4">Art</td>
+            <td class="py-3 px-4">Music</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Science</td>
+            <td class="py-3 px-4">Social Studies</td>
+            <td class="py-3 px-4">English</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 7</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Art</td>
+            <td class="py-3 px-4">Music</td>
+            <td class="py-3 px-4">Nepali</td>
+            <td class="py-3 px-4">Science</td>
+            <td class="py-3 px-4">Math</td>
+          </tr>
+          <tr class="border-b border-gray-200 hover:bg-red-50 transition">
+            <td class="py-3 px-4 font-semibold text-red-600">Period 8</td>
+            <td class="py-3 px-4">Social Studies</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Art</td>
+            <td class="py-3 px-4">Music</td>
+            <td class="py-3 px-4">Physical Ed.</td>
+            <td class="py-3 px-4">Computer</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Notes -->
+    <div class="mt-8 max-w-xl mx-auto text-center text-gray-600 italic
+                opacity-0 translate-y-6 transition-all duration-700 fade-up">
+      <p>Note: Timings and subjects are subject to change. Please check with your class teacher for the latest updates.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Animate fade-up on scroll
+  document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => {
+      observer.observe(el);
+    });
+  });
+</script>
+
+{% endblock %}

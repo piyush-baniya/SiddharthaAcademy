@@ -1,0 +1,165 @@
+<!-- filepath: c:\Users\Hamid\OneDrive\Documents\Programming\SiddharthaAcademy\SiddharthaAcademy\templates\core\about.html -->
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}About Us | Siddhartha Academy{% endblock %}
+{% block content %}
+
+<!-- AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen w-full bg-gradient-to-br from-white via-red-50 to-red-100 py-12">
+  <div class="max-w-5xl mx-auto px-4">
+
+    <!-- Page Heading -->
+    <h1 data-aos="fade-down" data-aos-duration="1000" class="text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-12 tracking-tight drop-shadow">
+      About Siddhartha Academy
+    </h1>
+
+    <!-- Responsive image + text container -->
+    <div class="mt-16 flex flex-col md:flex-row items-center md:items-start gap-10">
+      <!-- Image -->
+      <div class="md:w-1/2 flex justify-center" data-aos="fade-up" data-aos-duration="1000">
+        <img 
+          src="{% static 'src/logo.png' %}" 
+          alt="Siddhartha Academy Campus" 
+          class="rounded-3xl shadow-2xl w-50 h-50"
+        >
+      </div>
+      <!-- Text -->
+      <div class="text-center md:text-left" data-aos="fade-left" data-aos-duration="1000">
+        <p class="text-xl text-gray-700 font-medium">
+          Our journey continues as we strive to set new standards in education and inspire the next generation of leaders.
+        </p>
+      </div>
+    </div>
+
+    <br> 
+
+    <!-- Principal Message -->
+    <section data-aos="fade-right" data-aos-duration="1000" class="flex flex-col md:flex-row items-center bg-white/80 rounded-3xl shadow-xl p-8 md:p-12 mb-12 gap-8 md:gap-12 border-t-4 border-red-200">
+      <img src="{% static 'src/principal.jpg' %}" alt="Principal" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-lg border-4 border-red-100 mb-6 md:mb-0">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-red-700 mb-2">Message from the Principal</h2>
+        <p class="text-gray-700 text-lg mb-2">
+          Welcome to Siddhartha Academy! Our mission is to nurture every student’s potential and inspire a lifelong love for learning. We believe in holistic education, blending academics, values, and creativity to prepare our students for a bright future. Join us on this journey of growth and excellence.
+        </p>
+        <div class="mt-4">
+          <span class="font-semibold text-red-600">Dr. Suman Sharma</span>
+          <span class="block text-gray-500 text-sm">Principal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vice Principal Message -->
+    <section data-aos="fade-left" data-aos-duration="1000" class="flex flex-col md:flex-row-reverse items-center bg-white/80 rounded-3xl shadow-xl p-8 md:p-12 mb-12 gap-8 md:gap-12 border-t-4 border-yellow-200">
+      <img src="{% static 'src/viceprincipal.jpg' %}" alt="Vice Principal" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover shadow-lg border-4 border-yellow-100 mb-6 md:mb-0">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-yellow-600 mb-2">Message from the Vice Principal</h2>
+        <p class="text-gray-700 text-lg mb-2">
+          At Siddhartha Academy, we foster a supportive and inclusive environment where every student can thrive. Our dedicated faculty and innovative programs ensure that each child receives the attention and encouragement they deserve. We look forward to helping your child achieve their dreams!
+        </p>
+        <div class="mt-4">
+          <span class="font-semibold text-yellow-600">Ms. Anita Karki</span>
+          <span class="block text-gray-500 text-sm">Vice Principal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Management Team Message -->
+    <section data-aos="fade-up" data-aos-duration="1000" class="bg-white/80 rounded-3xl shadow-xl p-8 md:p-12 mb-8 border-t-4 border-blue-200">
+      <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+        <div class="flex-1">
+          <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-2">Message from the Management Team</h2>
+          <p class="text-gray-700 text-lg mb-2">
+            Our management team is committed to providing world-class facilities, a safe campus, and a vibrant learning atmosphere. We continuously invest in modern infrastructure and technology to empower our students and teachers. Thank you for trusting Siddhartha Academy with your child’s education.
+          </p>
+          <div class="mt-4">
+            <span class="font-semibold text-blue-700">The Management Team</span>
+          </div>
+        </div>
+        <div class="flex-1 flex flex-wrap justify-center gap-4">
+          <img src="{% static 'src/management1.jpg' %}" alt="Management Member 1" class="w-20 h-20 rounded-full object-cover shadow border-2 border-blue-100">
+          <img src="{% static 'src/management2.jpg' %}" alt="Management Member 2" class="w-20 h-20 rounded-full object-cover shadow border-2 border-blue-100">
+          <img src="{% static 'src/management3.jpg' %}" alt="Management Member 3" class="w-20 h-20 rounded-full object-cover shadow border-2 border-blue-100">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4">
+    <!-- Heading -->
+    <h1 data-aos="zoom-in" data-aos-duration="1000" class="text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-12 tracking-tight drop-shadow">
+      Meet Our Team
+    </h1>
+
+    <!-- Team Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+      <!-- Team Member 1 -->
+      <div data-aos="fade-up" data-aos-delay="100" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/principal.jpg' %}" alt="Principal" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-red-100 mb-4">
+        <h2 class="text-xl font-bold text-red-700">Dr. Suman Sharma</h2>
+        <p class="text-gray-500 mb-2">Principal</p>
+        <p class="text-gray-700 text-center text-sm">
+          Visionary leader dedicated to holistic education and student empowerment.
+        </p>
+      </div>
+      <!-- Team Member 2 -->
+      <div data-aos="fade-up" data-aos-delay="200" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/viceprincipal.jpg' %}" alt="Vice Principal" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-yellow-100 mb-4">
+        <h2 class="text-xl font-bold text-yellow-700">Ms. Anita Karki</h2>
+        <p class="text-gray-500 mb-2">Vice Principal</p>
+        <p class="text-gray-700 text-center text-sm">
+          Passionate about fostering a supportive and inclusive learning environment.
+        </p>
+      </div>
+      <!-- Team Member 3 -->
+      <div data-aos="fade-up" data-aos-delay="300" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/management1.jpg' %}" alt="Management" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-blue-100 mb-4">
+        <h2 class="text-xl font-bold text-blue-700">Mr. Rajesh Shrestha</h2>
+        <p class="text-gray-500 mb-2">Management Team</p>
+        <p class="text-gray-700 text-center text-sm">
+          Dedicated to providing world-class facilities and a vibrant campus life.
+        </p>
+      </div>
+      <!-- Team Member 4 -->
+      <div data-aos="fade-up" data-aos-delay="400" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/management2.jpg' %}" alt="Management" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-blue-100 mb-4">
+        <h2 class="text-xl font-bold text-blue-700">Ms. Priya Lama</h2>
+        <p class="text-gray-500 mb-2">Management Team</p>
+        <p class="text-gray-700 text-center text-sm">
+          Focused on innovation and continuous improvement in education.
+        </p>
+      </div>
+      <!-- Team Member 5 -->
+      <div data-aos="fade-up" data-aos-delay="500" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/teacher1.jpg' %}" alt="Teacher" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-green-100 mb-4">
+        <h2 class="text-xl font-bold text-green-700">Mr. Binod Gautam</h2>
+        <p class="text-gray-500 mb-2">Senior Teacher</p>
+        <p class="text-gray-700 text-center text-sm">
+          Inspiring students with a passion for science and discovery.
+        </p>
+      </div>
+      <!-- Team Member 6 -->
+      <div data-aos="fade-up" data-aos-delay="600" class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center">
+        <img src="{% static 'src/teacher2.jpg' %}" alt="Teacher" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-pink-100 mb-4">
+        <h2 class="text-xl font-bold text-pink-700">Ms. Rina Thapa</h2>
+        <p class="text-gray-500 mb-2">Senior Teacher</p>
+        <p class="text-gray-700 text-center text-sm">
+          Dedicated to nurturing creativity and critical thinking in every child.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AOS Script -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    once: true,
+    offset: 80,
+    easing: 'ease-in-out'
+  });
+</script>
+
+{% endblock %}

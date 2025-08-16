@@ -1,0 +1,29 @@
+{% extends "management/base.html" %}
+{% block title %}Add Subject — Siddhartha Academy{% endblock %}
+{% block content %}
+<h1 class="text-4xl font-extrabold mb-8 text-center mt-6 text-red-700">Add New Subject</h1>
+
+{% if messages %}
+  <ul class="mb-6 space-y-2 max-w-3xl mx-auto">
+    {% for message in messages %}
+      <li class="text-sm text-red-600 font-semibold bg-red-100 rounded px-4 py-2 shadow-sm">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="POST" class="bg-white p-8 rounded-3xl shadow-lg max-w-3xl mx-auto space-y-8">
+  {% csrf_token %}
+  <div>
+    <label for="name" class="block mb-2 font-semibold text-gray-700">Subject Name <span class="text-red-500">*</span></label>
+    <input type="text" id="name" name="name" required maxlength="100"
+      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+      value="{{ request.POST.name|default:'' }}" />
+  </div>
+
+  <div class="flex justify-end gap-6">
+    <a href="{% url 'subject_list' %}" class="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-gray-700 font-semibold transition">Cancel</a>
+    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold shadow-md">Add Subject</button>
+  </div>
+</form>
+<br><br>
+{% endblock %}

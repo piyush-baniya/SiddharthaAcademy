@@ -1,0 +1,409 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}Teachers List — Siddhartha Academy{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+{% if messages %}
+  <div 
+    x-data="{ show: true }" 
+    x-show="show" 
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 transform translate-x-10"
+    x-transition:enter-end="opacity-100 transform translate-x-0"
+    x-transition:leave="transition ease-in duration-300"
+    x-transition:leave-start="opacity-100 transform translate-x-0"
+    x-transition:leave-end="opacity-0 transform translate-x-10"
+    x-init="setTimeout(() => show = false, 4000)"
+    class="fixed top-5 right-5 z-50 max-w-xs p-4 bg-green-50 border border-green-400 text-green-800 rounded-lg shadow-lg flex items-center space-x-3"
+  >
+    <svg class="w-6 h-6 flex-shrink-0 text-green-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 13l4 4L19 7"></path>
+    </svg>
+    <div class="flex-1 font-semibold text-sm">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+    <button @click="show = false" class="text-green-600 hover:text-green-900 focus:outline-none" aria-label="Close notification">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+{% endif %}
+
+<div x-data="teacherModal()" class="min-h-screen bg-gray-50">
+  <div class="flex flex-col md:flex-row">
+
+    <!-- Sidebar omitted -->
+
+    <main class="flex-1 p-4 sm:p-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800">Teachers List</h1>
+          <p class="text-sm text-gray-500 mt-1">{{ teachers|length }} teachers</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="{% url 'add_teacher' %}"
+             class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base font-medium shadow-md transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Teacher
+          </a>
+
+          <div class="hidden sm:flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+            </svg>
+            <input type="text" placeholder="Search teachers..." class="outline-none text-sm text-gray-700" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+        <table class="min-w-full text-left text-sm text-gray-700">
+          <thead class="bg-gray-100 uppercase text-xs tracking-wide text-gray-600">
+            <tr>
+              <th class="py-3 px-4 w-12">#</th>
+              <th class="py-3 px-4">Name</th>
+              <th class="py-3 px-4">Email</th>
+              <th class="py-3 px-4">Contact</th>
+              <th class="py-3 px-4 w-40 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for teacher in teachers %}
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="py-3 px-4 align-top">{{ forloop.counter }}</td>
+              <td class="py-3 px-4 font-medium text-gray-900" title="{{ teacher.full_name }}">
+                {{ teacher.full_name }} 
+              </td>
+              <td class="py-3 px-4" title="{{ teacher.email }}">{{ teacher.email }}</td>
+              <td class="py-3 px-4">{{ teacher.phone }}</td>
+              <td class="py-3 px-4 text-center">
+                <div class="flex justify-center gap-4 text-sm">
+                                <button
+                @click="openViewModal({
+                  id: {{ teacher.id }},
+                  full_name: '{{ teacher.full_name|escapejs }}',
+                  email: '{{ teacher.email|escapejs }}',
+                  phone: '{{ teacher.phone|escapejs }}',
+                  address: '{{ teacher.address|default:''|escapejs }}',
+                  photo_url: '{% if teacher.photo %}{{ teacher.photo.url|escapejs }}{% else %}{% endif %}',
+                  linkedin_profile: '{{ teacher.linkedin_profile|default_if_none:''|escapejs }}',
+                  date_joined: '{{ teacher.date_joined|date:"Y-m-d"|default_if_none:"" }}',
+                  date_left: '{{ teacher.date_left|date:"Y-m-d"|default_if_none:"" }}',
+                  related_document_url: '{% if teacher.related_document %}{{ teacher.related_document.url|escapejs }}{% else %}{% endif %}',
+                  cv_url: '{% if teacher.cv %}{{ teacher.cv.url|escapejs }}{% else %}{% endif %}',
+                  pan_card_url: '{% if teacher.pan_card %}{{ teacher.pan_card.url|escapejs }}{% else %}{% endif %}',
+                  citizenship_front_url: '{% if teacher.citizenship_front %}{{ teacher.citizenship_front.url|escapejs }}{% else %}{% endif %}',
+                  citizenship_back_url: '{% if teacher.citizenship_back %}{{ teacher.citizenship_back.url|escapejs }}{% else %}{% endif %}',
+                  class_subjects: [
+                    {% for cs in teacher.class_subjects.all %}
+                    {
+                      subject: '{{ cs.subject.name|escapejs }}',
+                      classroom: '{{ cs.classroom }}'
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                  ]
+                })"
+                class="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                title="View Teacher Details"
+              >View</button>
+
+
+                  <a href="{% url 'edit_teacher' teacher.id %}" class="text-yellow-600 hover:text-yellow-800 font-medium" title="Edit Teacher">Edit</a>
+
+                  <button
+                    @click="openDeleteModal({ id: {{ teacher.id }}, full_name: '{{ teacher.full_name|escapejs }}' })"
+                    class="text-red-600 hover:text-red-800 font-medium"
+                    title="Delete Teacher"
+                  >Delete</button>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="py-6 text-center text-gray-500">No teachers found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards List -->
+      <div class="sm:hidden space-y-6">
+        {% for teacher in teachers %}
+        <div class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-lg font-bold text-gray-800">{{ teacher.full_name }} </div>
+              <p class="text-sm text-gray-500 mt-1 truncate" title="{{ teacher.email }}">{{ teacher.email }}</p>
+            </div>
+            <div class="text-sm">
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                {% if teacher.is_active %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+                {% if teacher.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-3 text-sm text-gray-600">
+            <p><strong>Contact:</strong> {{ teacher.phone }}</p>
+            <p><strong>Address:</strong> {{ teacher.address|default:"N/A" }}</p>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-3 text-sm">
+            <button
+              @click="openViewModal({
+                id: {{ teacher.id }},
+                full_name: '{{ teacher.full_name|escapejs }}',
+                email: '{{ teacher.email|escapejs }}',
+                phone: '{{ teacher.phone|escapejs }}',
+                address: '{{ teacher.address|default:''|escapejs }}',
+                photo_url: '{% if teacher.photo %}{{ teacher.photo.url|escapejs }}{% else %}{% endif %}',
+                linkedin_profile: '{{ teacher.linkedin_profile|default_if_none:''|escapejs }}',
+                date_joined: '{{ teacher.date_joined|date:"Y-m-d"|default_if_none:"" }}',
+                date_left: '{{ teacher.date_left|date:"Y-m-d"|default_if_none:"" }}',
+                related_document_url: '{% if teacher.related_document %}{{ teacher.related_document.url|escapejs }}{% else %}{% endif %}',
+                cv_url: '{% if teacher.cv %}{{ teacher.cv.url|escapejs }}{% else %}{% endif %}',
+                pan_card_url: '{% if teacher.pan_card %}{{ teacher.pan_card.url|escapejs }}{% else %}{% endif %}',
+                citizenship_front_url: '{% if teacher.citizenship_front %}{{ teacher.citizenship_front.url|escapejs }}{% else %}{% endif %}',
+                citizenship_back_url: '{% if teacher.citizenship_back %}{{ teacher.citizenship_back.url|escapejs }}{% else %}{% endif %}'
+              })"
+              class="text-blue-600 hover:underline"
+              title="View Teacher Details"
+            >View</button>
+
+            <a href="{% url 'edit_teacher' teacher.id %}" class="text-yellow-600 hover:underline" title="Edit Teacher">Edit</a>
+
+            <button
+              @click="openDeleteModal({ id: {{ teacher.id }}, full_name: '{{ teacher.full_name|escapejs }}' })"
+              class="text-red-600 hover:underline"
+              title="Delete Teacher"
+            >Delete</button>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-gray-500 py-10">No teachers found.</div>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+
+  <!-- Floating Add (mobile) -->
+  <a href="{% url 'add_teacher' %}" class="sm:hidden fixed bottom-24 right-6 z-50">
+    <div class="w-14 h-14 rounded-full bg-red-600 shadow-xl flex items-center justify-center text-white hover:bg-red-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+    </div>
+  </a>
+
+  <!-- Modal for Viewing Teacher Details -->
+  <div
+    x-show="isViewOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6"
+    style="display: none;"
+    @keydown.window.escape="closeViewModal()"
+    @click="if ($event.target === $el) closeViewModal()"
+    tabindex="0"
+  >
+    <div
+      x-show="isViewOpen"
+      x-transition.scale.origin.center
+      class="bg-white rounded-3xl max-w-full sm:max-w-lg w-full p-6 sm:p-8 shadow-2xl relative overflow-auto max-h-[85vh]"
+      role="dialog" aria-modal="true"
+    >
+      <button
+        @click.prevent="closeViewModal()"
+        class="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-3xl font-bold focus:outline-none"
+        aria-label="Close modal"
+      >&times;</button>
+
+      <h2 class="text-xl sm:text-2xl font-extrabold text-red-700 mb-6">Teacher Details</h2>
+
+      <div class="space-y-4 text-sm sm:text-base text-gray-700">
+
+        <!-- Photo -->
+        <div class="flex items-center space-x-4">
+          <strong>Photo:</strong>
+          <template x-if="viewData.photo_url && viewData.photo_url !== ''">
+            <img
+              :src="viewData.photo_url"
+              alt="Teacher Photo"
+              class="w-20 h-20 rounded-full object-cover border-2 border-red-500 shadow-md"
+            />
+          </template>
+          <template x-if="!viewData.photo_url || viewData.photo_url === ''">
+            <span class="text-gray-500">No photo available</span>
+          </template>
+        </div>
+
+        <p><strong>Full Name:</strong> <span x-text="viewData.full_name"></span></p>
+        <p><strong>Email:</strong> <span x-text="viewData.email || 'N/A'"></span></p>
+        <p><strong>Phone:</strong> <span x-text="viewData.phone || 'N/A'"></span></p>
+        <p><strong>Address:</strong> <span x-text="viewData.address || 'N/A'"></span></p>
+        <p><strong>Subjects & Classes:</strong></p>
+        <div class="flex flex-wrap gap-2 max-h-40 overflow-auto rounded-md p-3">
+          <template x-for="cs in viewData.class_subjects" :key="cs.subject + '-' + cs.classroom">
+            <span
+              class="inline-flex items-center rounded-full bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 shadow-sm select-none"
+              x-text="`${cs.subject} - ${cs.classroom}`"
+            ></span>
+          </template>
+          <template x-if="viewData.class_subjects.length === 0">
+            <span class="text-gray-400 italic text-sm">No subjects assigned</span>
+          </template>
+        </div>
+
+        <p><strong>LinkedIn Profile:</strong>
+          <template x-if="viewData.linkedin_profile && viewData.linkedin_profile !== ''">
+            <a :href="viewData.linkedin_profile" target="_blank" class="text-blue-600 hover:underline" x-text="viewData.linkedin_profile"></a>
+          </template>
+          <template x-if="!viewData.linkedin_profile || viewData.linkedin_profile === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>Related Document:</strong>
+          <template x-if="viewData.related_document_url && viewData.related_document_url !== ''">
+            <a :href="viewData.related_document_url" target="_blank" class="text-blue-600 hover:underline">View Document</a>
+          </template>
+          <template x-if="!viewData.related_document_url || viewData.related_document_url === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>CV:</strong>
+          <template x-if="viewData.cv_url && viewData.cv_url !== ''">
+            <a :href="viewData.cv_url" target="_blank" class="text-blue-600 hover:underline">View CV</a>
+          </template>
+          <template x-if="!viewData.cv_url || viewData.cv_url === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>PAN Card:</strong>
+          <template x-if="viewData.pan_card_url && viewData.pan_card_url !== ''">
+            <a :href="viewData.pan_card_url" target="_blank" class="text-blue-600 hover:underline">View PAN Card</a>
+          </template>
+          <template x-if="!viewData.pan_card_url || viewData.pan_card_url === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>Citizenship Front:</strong>
+          <template x-if="viewData.citizenship_front_url && viewData.citizenship_front_url !== ''">
+            <a :href="viewData.citizenship_front_url" target="_blank" class="text-blue-600 hover:underline">View Front</a>
+          </template>
+          <template x-if="!viewData.citizenship_front_url || viewData.citizenship_front_url === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>Citizenship Back:</strong>
+          <template x-if="viewData.citizenship_back_url && viewData.citizenship_back_url !== ''">
+            <a :href="viewData.citizenship_back_url" target="_blank" class="text-blue-600 hover:underline">View Back</a>
+          </template>
+          <template x-if="!viewData.citizenship_back_url || viewData.citizenship_back_url === ''">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>Date Joined:</strong> <span x-text="viewData.date_joined || 'N/A'"></span></p>
+        <p><strong>Date Left:</strong> <span x-text="viewData.date_left || 'N/A'"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    x-show="isDeleteOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6"
+    style="display: none;"
+    @keydown.window.escape="closeDeleteModal()"
+    @click="if ($event.target === $el) closeDeleteModal()"
+    tabindex="0"
+  >
+    <div
+      x-show="isDeleteOpen"
+      x-transition.scale.origin.center
+      class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative"
+      role="dialog" aria-modal="true"
+    >
+      <button
+        @click.prevent="closeDeleteModal()"
+        class="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-3xl font-bold focus:outline-none"
+        aria-label="Close modal"
+      >&times;</button>
+
+      <h2 class="text-xl font-extrabold text-red-700 mb-6">Delete Confirmation</h2>
+
+      <p class="mb-6 text-gray-700">Are you sure you want to delete <span class="font-semibold" x-text="deleteData.full_name"></span>?</p>
+
+      <form method="POST" :action="`/manage/teachers/delete/${deleteData.id}/`" class="flex justify-end gap-3">
+        {% csrf_token %}
+        <button type="button" @click="closeDeleteModal()" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Delete</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function teacherModal() {
+  return {
+    isViewOpen: false,
+    isDeleteOpen: false,
+    viewData: {
+      id: null,
+      full_name: '',
+      email: '',
+      phone: '',
+      address: '',
+      photo_url: '',
+      linkedin_profile: '',
+      date_joined: '',
+      date_left: '',
+      related_document_url: '',
+      cv_url: '',
+      pan_card_url: '',
+      citizenship_front_url: '',
+      citizenship_back_url: '',
+    },
+    deleteData: {
+      id: null,
+      full_name: '',
+    },
+    openViewModal(data) {
+      this.viewData = { ...data };
+      this.isViewOpen = true;
+      document.body.style.overflow = 'hidden';
+    },
+    closeViewModal() {
+      this.isViewOpen = false;
+      document.body.style.overflow = '';
+    },
+    openDeleteModal(data) {
+      this.deleteData = { ...data };
+      this.isDeleteOpen = true;
+      document.body.style.overflow = 'hidden';
+    },
+    closeDeleteModal() {
+      this.isDeleteOpen = false;
+      document.body.style.overflow = '';
+    },
+  }
+}
+</script>
+
+{% endblock %}

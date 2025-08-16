@@ -1,0 +1,47 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Exams — Siddhartha Academy{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+  <div class="flex">
+    <!-- Sidebar omitted -->
+
+    <main class="flex-1 p-8 max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Examinations</h1>
+        <a href="/manage/exams/add/" class="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow">+ Add Exam</a>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow overflow-hidden">
+        <table class="min-w-full text-left text-sm text-gray-600">
+          <thead class="bg-gray-50 uppercase text-xs text-gray-500">
+            <tr>
+              <th class="py-3 px-4">#</th>
+              <th class="py-3 px-4">Exam Name</th>
+              <th class="py-3 px-4">Date</th>
+              <th class="py-3 px-4">Class</th>
+              <th class="py-3 px-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr class="hover:bg-gray-50">
+              <td class="py-3 px-4">1</td>
+              <td class="py-3 px-4 font-medium text-gray-900">Mid Term Exam</td>
+              <td class="py-3 px-4">2025-10-15</td>
+              <td class="py-3 px-4">Grade 1</td>
+              <td class="py-3 px-4">
+                <div class="flex gap-2">
+                  <a href="#" class="text-blue-600 hover:underline">View</a>
+                  <a href="#" class="text-yellow-600 hover:underline">Edit</a>
+                  <button class="text-red-600 hover:underline">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <!-- More exams -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}

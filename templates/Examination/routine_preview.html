@@ -1,0 +1,68 @@
+{% extends "management/base.html" %}
+{% load dict_extras %}
+{% load static %}
+{% block title %}Preview — {{ routine.examination_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow">
+
+  <!-- Header: logo + school info side by side -->
+  <div class="flex items-center justify-center mb-4">
+    <img src="{% static 'src/logo.png' %}" alt="Logo" style="height: 64px; width: 64px; margin-right: 3px;" />
+    <div class="text-center">
+      <h1 class="text-xl font-bold mb-0">Siddhartha Academy</h1>
+      <p class="text-sm text-gray-600 mb-0">Srijananagar-5, Bhaktapur</p>
+      <p class="text-sm text-gray-600 mb-0">Phone: 01-6615178 | Email: siddharthabkt@gmail.com</p>
+    </div>
+  </div>
+
+  <!-- Exam time left-aligned and bold -->
+  {% if routine.exam_time %}
+  <div class="text-left font-bold text-sm mb-4">
+    Time: {{ routine.exam_time }}
+  </div>
+  {% endif %}
+
+  <!-- Exam name centered -->
+  <h2 class="text-2xl font-bold text-center mb-6">{{ routine.examination_name }}</h2>
+
+  <!-- Note above -->
+  {% if routine.note_above %}
+  <p class="mb-6 text-gray-700">{{ routine.note_above }}</p>
+  {% endif %}
+
+  <!-- Routine table -->
+  <div class="overflow-auto">
+    <table class="w-full table-auto border-collapse border border-gray-200">
+      <thead class="bg-black text-white">
+        <tr>
+          <th class="border p-2">Date</th>
+          {% for cls in class_names %}
+          <th class="border p-2">{{ cls }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dates %}
+        <tr>
+          <td class="border p-2">{{ d|date:"Y-m-d" }}</td>
+          {% for cls in class_names %}
+          <td class="border p-2 text-center">
+            {{ grid|get_item:d|get_item:cls|default:"-" }}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Note below -->
+  {% if routine.note_below %}
+  <p class="mt-6 text-gray-700">{{ routine.note_below }}</p>
+  {% endif %}
+</div>
+<div class="flex justify-end m-4">
+  <a href="{% url 'exam:routine_pdf' routine.pk %}" class="px-4 py-2 bg-red-600 text-white rounded">Download PDF</a>
+  <a href="{% url 'exam:routine_detail' routine.pk %}" class="px-4 py-2 border rounded ml-2">Back to Detail</a>
+{% endblock %}

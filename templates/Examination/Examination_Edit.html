@@ -1,0 +1,56 @@
+{% extends "management/base.html" %}
+{% block title %}Edit Examination — Siddhartha Academy{% endblock %}
+{% block content %}
+<h1 class="text-4xl font-extrabold mb-8 text-center mt-6 text-red-700">Edit Examination</h1>
+
+<div class="max-w-3xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+
+    <div>
+      <label for="name" class="block font-semibold mb-1">Examination Name</label>
+      <input type="text" name="name" id="name" value="{{ exam.name }}" class="w-full border border-gray-300 rounded-lg p-3" required>
+    </div>
+
+    <div>
+      <label for="date" class="block font-semibold mb-1">Date</label>
+      <input type="date" name="date" id="date" value="{{ exam.date }}" class="w-full border border-gray-300 rounded-lg p-3" required>
+    </div>
+
+    <div>
+      <label for="classrooms">Select Classrooms</label>
+      <select
+        name="classrooms"
+        id="classrooms"
+        multiple
+        required
+      >
+        {% for cls in classes %}
+          <option value="{{ cls.id }}" {% if exam and cls in exam.classrooms.all %}selected{% endif %}>
+  {{ cls.name }}
+</option>
+        {% empty %}
+          <option value="" disabled>No classrooms available</option>
+        {% endfor %}
+      </select>
+
+    </div>
+
+    <div>
+      <label for="subject" class="block font-semibold mb-1">Subject</label>
+      <select name="subject" id="subject" class="w-full border border-gray-300 rounded-lg p-3" required>
+        {% for subject in subjects %}
+        <option value="{{ subject.id }}" {% if subject.id == exam.subject.id %}selected{% endif %}>{{ subject.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="flex justify-end space-x-4">
+      <a href="{% url 'examination_list' %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100">Cancel</a>
+      <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">Update Examination</button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

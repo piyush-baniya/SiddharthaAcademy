@@ -1,0 +1,75 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Enter Marks - {{ exam.name }}{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-extrabold mb-8 text-center mt-6 text-red-700">
+  Enter Marks for {{ exam.name }} — {{ exam.subject.name }} (Class: {{ classroom.name }})
+</h1>
+
+<form method="POST" class="max-w-6xl mx-auto bg-white p-8 rounded-3xl shadow-lg space-y-6">
+  {% csrf_token %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full table-auto border-collapse border border-gray-300">
+      <thead class="bg-red-600 text-white">
+        <tr>
+          <th class="border border-gray-300 px-4 py-2 text-left">Roll No</th>
+          <th class="border border-gray-300 px-4 py-2 text-left">Student Name</th>
+          <th class="border border-gray-300 px-4 py-2 text-left">Theory Marks (Full: {{ full_marks.theory }})</th>
+          <th class="border border-gray-300 px-4 py-2 text-left">Practical Marks (Full: {{ full_marks.practical }})</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        {% with student_marks=marks_dict|get_item:student.id %}
+        <tr class="hover:bg-gray-100">
+          <td class="border border-gray-300 px-4 py-2">{{ student.roll_number }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ student.first_name }} {{ student.last_name }}</td>
+          <td class="border border-gray-300 px-4 py-2">
+            <input
+              type="number"
+              name="marks_{{ student.id }}_theory"
+              min="0"
+              max="{{ full_marks.theory }}"
+              step="0.01"
+              value="{{ student_marks.theory_marks|default_if_none:'' }}"
+              class="w-20 border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
+            />
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            <input
+              type="number"
+              name="marks_{{ student.id }}_practical"
+              min="0"
+              max="{{ full_marks.practical }}"
+              step="0.01"
+              value="{{ student_marks.practical_marks|default_if_none:'' }}"
+              class="w-20 border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
+            />
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center py-4 text-gray-600">No students found in this class.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex justify-end mt-6">
+    <button
+      type="submit"
+      class="px-8 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md transition"
+    >
+      Save Marks
+    </button>
+  </div>
+</form>
+
+{% endblock %}

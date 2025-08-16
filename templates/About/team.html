@@ -1,0 +1,85 @@
+<!-- filepath: c:\Users\Hamid\OneDrive\Documents\Programming\SiddharthaAcademy\SiddharthaAcademy\templates\core\team.html -->
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Our Team | Siddhartha Academy{% endblock %}
+{% block content %}
+
+<div class="min-h-screen w-full bg-gradient-to-br from-white via-red-50 to-red-100 py-12">
+  <div class="max-w-5xl mx-auto px-4">
+    <!-- Heading -->
+    <h1 class="text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-12 tracking-tight drop-shadow animate-fade-in-down">
+      Meet Our Team
+    </h1>
+
+    <!-- Team Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+      <!-- Team Member 1 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up">
+        <img src="{% static 'src/principal.jpg' %}" alt="Principal" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-red-100 mb-4">
+        <h2 class="text-xl font-bold text-red-700">Dr. Suman Sharma</h2>
+        <p class="text-gray-500 mb-2">Principal</p>
+        <p class="text-gray-700 text-center text-sm">
+          Visionary leader dedicated to holistic education and student empowerment.
+        </p>
+      </div>
+      <!-- Team Member 2 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up" style="animation-delay:0.1s;">
+        <img src="{% static 'src/viceprincipal.jpg' %}" alt="Vice Principal" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-yellow-100 mb-4">
+        <h2 class="text-xl font-bold text-yellow-700">Ms. Anita Karki</h2>
+        <p class="text-gray-500 mb-2">Vice Principal</p>
+        <p class="text-gray-700 text-center text-sm">
+          Passionate about fostering a supportive and inclusive learning environment.
+        </p>
+      </div>
+      <!-- Team Member 3 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up" style="animation-delay:0.2s;">
+        <img src="{% static 'src/management1.jpg' %}" alt="Management" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-blue-100 mb-4">
+        <h2 class="text-xl font-bold text-blue-700">Mr. Rajesh Shrestha</h2>
+        <p class="text-gray-500 mb-2">Management Team</p>
+        <p class="text-gray-700 text-center text-sm">
+          Dedicated to providing world-class facilities and a vibrant campus life.
+        </p>
+      </div>
+      <!-- Team Member 4 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up" style="animation-delay:0.3s;">
+        <img src="{% static 'src/management2.jpg' %}" alt="Management" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-blue-100 mb-4">
+        <h2 class="text-xl font-bold text-blue-700">Ms. Priya Lama</h2>
+        <p class="text-gray-500 mb-2">Management Team</p>
+        <p class="text-gray-700 text-center text-sm">
+          Focused on innovation and continuous improvement in education.
+        </p>
+      </div>
+      <!-- Team Member 5 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up" style="animation-delay:0.4s;">
+        <img src="{% static 'src/teacher1.jpg' %}" alt="Teacher" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-green-100 mb-4">
+        <h2 class="text-xl font-bold text-green-700">Mr. Binod Gautam</h2>
+        <p class="text-gray-500 mb-2">Senior Teacher</p>
+        <p class="text-gray-700 text-center text-sm">
+          Inspiring students with a passion for science and discovery.
+        </p>
+      </div>
+      <!-- Team Member 6 -->
+      <div class="bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col items-center animate-fade-in-up" style="animation-delay:0.5s;">
+        <img src="{% static 'src/teacher2.jpg' %}" alt="Teacher" class="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-pink-100 mb-4">
+        <h2 class="text-xl font-bold text-pink-700">Ms. Rina Thapa</h2>
+        <p class="text-gray-500 mb-2">Senior Teacher</p>
+        <p class="text-gray-700 text-center text-sm">
+          Dedicated to nurturing creativity and critical thinking in every child.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Animations (Tailwind CSS custom classes, add to your CSS if needed) -->
+<style>
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(40px);}
+  100% { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in-up {
+  animation: fade-in-up 1s both;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "management/base.html" %}
+{% block title %}Add Teacher — Siddhartha Academy{% endblock %}
+{% block content %}
+<h1 class="text-4xl font-extrabold mb-8 text-center mt-6 text-red-700">Add New Teacher</h1>
+
+{% if messages %}
+  <ul class="mb-6 space-y-2 max-w-6xl mx-auto">
+    {% for message in messages %}
+      <li class="text-sm text-red-600 font-semibold bg-red-100 rounded px-4 py-2 shadow-sm">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Choices.js CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+<form method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-3xl shadow-lg max-w-6xl mx-4 space-y-8">
+  {% csrf_token %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+    <div>
+      <label for="full_name" class="block mb-2 font-semibold text-gray-700">Full Name <span class="text-red-500">*</span></label>
+      <input type="text" id="full_name" name="full_name" required maxlength="150"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label for="email" class="block mb-2 font-semibold text-gray-700">Email</label>
+      <input type="email" id="email" name="email" maxlength="150"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label for="phone" class="block mb-2 font-semibold text-gray-700">Phone</label>
+      <input type="text" id="phone" name="phone" maxlength="20"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label for="linkedin_profile" class="block mb-2 font-semibold text-gray-700">LinkedIn Profile URL</label>
+      <input type="url" id="linkedin_profile" name="linkedin_profile" maxlength="250"
+        placeholder="https://linkedin.com/in/username"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="address" class="block mb-2 font-semibold text-gray-700">Address</label>
+      <textarea id="address" name="address" rows="3" maxlength="500"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-red-500 transition"></textarea>
+    </div>
+
+    <div>
+      <label for="date_joined" class="block mb-2 font-semibold text-gray-700">Date Joined</label>
+      <input type="date" id="date_joined" name="date_joined"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label for="date_left" class="block mb-2 font-semibold text-gray-700">Date Left</label>
+      <input type="date" id="date_left" name="date_left"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <!-- Multi-select for ClassSubjects -->
+    <div class="md:col-span-2">
+      <label for="class_subjects" class="block mb-2 font-semibold text-gray-700">Subjects and Classes to Teach</label>
+      <select id="class_subjects" name="class_subjects" multiple
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+        {% for cs in class_subjects %}
+          <option value="{{ cs.id }}">{{ cs.subject.name }} - {{ cs.classroom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- File Inputs -->
+
+    <div class="md:col-span-2">
+      <label for="photo" class="block mb-2 font-semibold text-gray-700">Photo</label>
+      <input type="file" id="photo" name="photo" accept="image/*"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="related_document" class="block mb-2 font-semibold text-gray-700">Related Document</label>
+      <input type="file" id="related_document" name="related_document"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="cv" class="block mb-2 font-semibold text-gray-700">CV</label>
+      <input type="file" id="cv" name="cv"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="pan_card" class="block mb-2 font-semibold text-gray-700">PAN Card</label>
+      <input type="file" id="pan_card" name="pan_card"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="citizenship_front" class="block mb-2 font-semibold text-gray-700">Citizenship Front</label>
+      <input type="file" id="citizenship_front" name="citizenship_front"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label for="citizenship_back" class="block mb-2 font-semibold text-gray-700">Citizenship Back</label>
+      <input type="file" id="citizenship_back" name="citizenship_back"
+        class="w-full border border-gray-300 rounded-lg p-2" />
+    </div>
+
+  </div>
+
+  <div class="flex justify-end gap-6 mt-8 max-w-6xl mx-4">
+    <a href="{% url 'teachers_list' %}" class="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-gray-700 font-semibold transition">Cancel</a>
+    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md transition">Add Teacher</button>
+  </div>
+</form>
+
+<!-- Choices.js for searchable multi-select -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const element = document.getElementById('class_subjects');
+    new Choices(element, {
+      removeItemButton: true,
+      searchEnabled: true,
+      placeholderValue: 'Select subjects and classes',
+      searchPlaceholderValue: 'Search...',
+      shouldSort: false,
+    });
+  });
+</script>
+
+{% endblock %}

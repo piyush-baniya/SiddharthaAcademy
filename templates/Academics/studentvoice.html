@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Student Voice | Siddhartha Academy{% endblock %}
+{% block content %}
+
+<div 
+  class="min-h-screen bg-gradient-to-br from-white via-red-50 to-red-100 py-12 px-4"
+  x-data 
+  x-init="
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.fade-up').forEach(el => {
+      observer.observe(el);
+    });
+  "
+>
+  <div class="max-w-7xl mx-auto">
+    <!-- Heading -->
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-red-700 mb-10 sm:mb-12 tracking-tight drop-shadow fade-up opacity-0 translate-y-6 transition-all duration-700">
+      Student Voice
+    </h1>
+
+    <!-- Intro Text -->
+    <p class="max-w-3xl mx-auto text-center text-gray-700 text-base sm:text-lg mb-10 sm:mb-12 fade-up opacity-0 translate-y-6 transition-all duration-700 delay-100">
+      Hear directly from our students about their experiences, achievements, and what makes Siddhartha Academy a special place to learn and grow.
+    </p>
+
+    <!-- Student Testimonials Grid -->
+    <div class="grid gap-6 sm:gap-8 md:gap-10 md:grid-cols-2 lg:grid-cols-3 px-2 sm:px-0">
+      <!-- Testimonial 1 -->
+      <div class="bg-white rounded-3xl shadow-lg p-6 sm:p-8 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 fade-up opacity-0 translate-y-6 delay-200">
+        <p class="text-gray-800 text-base sm:text-lg italic mb-5">
+          "The teachers at Siddhartha Academy are so supportive and inspiring. I feel motivated every day to do my best!"
+        </p>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img src="{% static 'src/students/student1.jpg' %}" alt="Student 1" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-lg hover:scale-105 transition duration-300">
+          <div>
+            <h3 class="text-red-700 font-bold text-lg sm:text-xl">Sita Sharma</h3>
+            <p class="text-gray-600 text-xs sm:text-sm">Class 10</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 2 -->
+      <div class="bg-white rounded-3xl shadow-lg p-6 sm:p-8 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 fade-up opacity-0 translate-y-6 delay-300">
+        <p class="text-gray-800 text-base sm:text-lg italic mb-5">
+          "I love the extracurricular activities here. They helped me discover my passion for music and art."
+        </p>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img src="{% static 'src/students/student2.jpg' %}" alt="Student 2" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-lg hover:scale-105 transition duration-300">
+          <div>
+            <h3 class="text-red-700 font-bold text-lg sm:text-xl">Rajesh Thapa</h3>
+            <p class="text-gray-600 text-xs sm:text-sm">Class 8</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 3 -->
+      <div class="bg-white rounded-3xl shadow-lg p-6 sm:p-8 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 fade-up opacity-0 translate-y-6 delay-400">
+        <p class="text-gray-800 text-base sm:text-lg italic mb-5">
+          "The community here feels like family. I've made lifelong friends and amazing memories."
+        </p>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img src="{% static 'src/students/student3.jpg' %}" alt="Student 3" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-lg hover:scale-105 transition duration-300">
+          <div>
+            <h3 class="text-red-700 font-bold text-lg sm:text-xl">Maya Gurung</h3>
+            <p class="text-gray-600 text-xs sm:text-sm">Class 9</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

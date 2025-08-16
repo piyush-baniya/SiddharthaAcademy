@@ -1,0 +1,154 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}Create Exam Routine — Siddhartha Academy{% endblock %}
+
+{% block content %}
+<!-- Alpine.js CDN -->
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<div class="max-w-7xl mx-auto p-6 bg-white rounded-2xl shadow">
+  <h1 class="text-3xl font-extrabold mb-4 text-red-700">Create Exam Routine</h1>
+
+<div class="
+{% if m.level_tag == 'error' %}
+    bg-red-100 text-red-800
+{% else %}
+    bg-green-100 text-green-800
+{% endif %}
+">
+    {{ m }}
+</div>
+
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div>
+        <label class="font-semibold block mb-1">Examination Name</label>
+        <input name="examination_name" required class="w-full border rounded px-3 py-2" placeholder="e.g. Final Term Exam 2082">
+      </div>
+      <div>
+        <label class="font-semibold block mb-1">Exam Time (optional)</label>
+        <input name="exam_time" class="w-full border rounded px-3 py-2" placeholder="e.g. 9:00 AM - 12:00 PM">
+      </div>
+      <div>
+        <label class="font-semibold block mb-1">Note (above table, optional)</label>
+        <input name="note_above" class="w-full border rounded px-3 py-2" placeholder="Notice / Instructions">
+      </div>
+    </div>
+
+    <!-- Alpine component: manages classes (columns) and rows -->
+    <div x-data="routineBuilder()" x-init="init()" class="overflow-auto">
+      <!-- Controls -->
+      <div class="flex gap-2 items-center mb-3">
+        <button type="button" @click="addClass()" class="bg-indigo-600 text-white px-3 py-1 rounded">+ Add Class Column</button>
+        <button type="button" @click="addRow()" class="bg-green-600 text-white px-3 py-1 rounded">+ Add Date Row</button>
+        <button type="button" @click="reset()" class="bg-gray-300 text-gray-800 px-3 py-1 rounded">Reset</button>
+      </div>
+
+      <!-- Table -->
+      <div class="min-w-max">
+        <table class="w-full table-auto border-collapse border border-gray-200">
+          <thead class="bg-red-600 text-white">
+            <tr>
+              <th class="border p-2 sticky left-0 bg-red-600">Exam Date</th>
+              <template x-for="(cls, idx) in classNames" :key="idx">
+                <th class="border p-2">
+                  <div class="flex items-center gap-2">
+                    <input type="text" :name="'class_header_'+idx" x-model="classNames[idx]" class="bg-transparent text-white font-semibold w-full" />
+                    <button type="button" @click="removeClass(idx)" class="text-white font-bold">✕</button>
+                  </div>
+                </th>
+              </template>
+              <th class="border p-2 sticky right-0 bg-red-600">Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="routine-body">
+            <template x-for="(row, rindex) in rows" :key="rindex">
+              <tr>
+                <td class="border p-2">
+                  <input type="date" :name="'exam_date[]'" x-model="rows[rindex].date" required class="w-full border rounded px-2 py-1" />
+                </td>
+
+                <template x-for="(cls, cindex) in classNames" :key="cindex">
+                  <td class="border p-2">
+                    <select :name="`subject_${rindex}_${cindex}`" class="w-full border rounded px-2 py-1">
+                      <option value="">-- Select Subject --</option>
+                      {% for subj in subjects %}
+                      <option value="{{ subj.id }}">{{ subj.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                </template>
+
+                <td class="border p-2">
+                  <div class="flex gap-2 justify-center">
+                    <button type="button" @click="removeRow(rindex)" class="px-2 py-1 bg-red-600 text-white rounded">Remove</button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hidden inputs to send class_names[] -->
+      <template x-for="(cls, idx) in classNames" :key="'hidden-'+idx">
+        <input type="hidden" name="class_names[]" :value="cls" />
+      </template>
+    </div>
+
+    <!-- Note below + submit -->
+    <div class="mt-4">
+      <label class="font-semibold block mb-1">Note (below table, optional)</label>
+      <textarea name="note_below" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <a href="{% url 'examination_list' %}" class="px-4 py-2 border rounded">Cancel</a>
+      <button type="submit" class="px-5 py-2 bg-red-600 text-white rounded font-semibold">Create Routine</button>
+    </div>
+  </form>
+</div>
+
+<script>
+function routineBuilder(){
+  return {
+    classNames: [],  // column labels
+    rows: [],        // { date: '' }
+    init(){
+      // default state: 1 class column and 1 row
+      this.classNames = ['Class 1'];
+      this.rows = [{date: ''}];
+    },
+    addClass(){
+      const next = this.classNames.length + 1;
+      this.classNames.push('Class ' + next);
+    },
+    removeClass(idx){
+      if (this.classNames.length <= 1) {
+        alert('At least one class column required.');
+        return;
+      }
+      this.classNames.splice(idx, 1);
+    },
+    addRow(){
+      this.rows.push({date: ''});
+    },
+    removeRow(idx){
+      if (this.rows.length <= 1) {
+        alert('At least one row required.');
+        return;
+      }
+      this.rows.splice(idx, 1);
+    },
+    reset(){
+      if (!confirm('Reset columns and rows? All unsaved changes will be lost.')) return;
+      this.init();
+    }
+  }
+}
+</script>
+{% endblock %}

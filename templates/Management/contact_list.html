@@ -1,0 +1,369 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}Contacts Received— Siddhartha Academy{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<div x-data="contactModal()" class="min-h-screen bg-gray-10">
+  <div class="flex flex-col md:flex-row">
+
+    <!-- Sidebar omitted -->
+
+    <main class="flex-1 p-4 sm:p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Contacts Received</h1>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block bg-white rounded-2xl shadow overflow-hidden">
+        <table class="min-w-full text-left text-sm text-gray-600 border-separate border-spacing-0">
+          <thead class="bg-gray-50 uppercase text-xs text-gray-500">
+            <tr>
+              <th class="py-3 px-4">#</th>
+              <th class="py-3 px-4 max-w-[150px] truncate">Name</th>
+              <th class="py-3 px-4 max-w-[180px] truncate">Email</th>
+              <th class="py-3 px-4 max-w-[180px] truncate">Subject</th>
+              <th class="py-3 px-4 max-w-[100px] truncate">Status</th>
+              <th class="py-3 px-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for contact in contacts %}
+            <tr class="hover:bg-gray-50">
+              <td class="py-3 px-4">{{ forloop.counter }}</td>
+              <td class="py-3 px-4 max-w-[150px] truncate font-medium text-gray-900" title="{{ contact.name }}">{{ contact.name }}</td>
+              <td class="py-3 px-4 max-w-[180px] truncate" title="{{ contact.email }}">{{ contact.email }}</td>
+              <td class="py-3 px-4 max-w-[180px] truncate" title="{{ contact.subject }}">{{ contact.subject }}</td>
+              <td class="py-3 px-4 max-w-[100px] truncate">
+                <span class="inline-block px-3 py-1 rounded-full
+                      {% if contact.status == 'Resolved' %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+                  {{ contact.status }}
+                </span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex gap-2 flex-wrap">
+                  <button 
+                    @click="openModal({ 
+                      id: {{ contact.id }},
+                      name: '{{ contact.name|escapejs }}',
+                      email: '{{ contact.email|escapejs }}',
+                      subject: '{{ contact.subject|escapejs }}',
+                      status: '{{ contact.status|escapejs }}',
+                      message: `{{ contact.message|escapejs }}`,
+                      reply: `{{ contact.reply|default_if_none:''|escapejs }}`
+                    }, 'view')" 
+                    class="text-blue-600 hover:underline cursor-pointer"
+                    title="View Contact"
+                  >View</button>
+
+                  <button 
+                    @click="openModal({ 
+                      id: {{ contact.id }},
+                      name: '{{ contact.name|escapejs }}',
+                      email: '{{ contact.email|escapejs }}',
+                      subject: '{{ contact.subject|escapejs }}',
+                      status: '{{ contact.status|escapejs }}',
+                      message: `{{ contact.message|escapejs }}`,
+                      reply: `{{ contact.reply|default_if_none:''|escapejs }}`
+                    }, 'reply')" 
+                    class="text-yellow-600 hover:underline cursor-pointer"
+                    title="Reply to Contact"
+                    x-bind:disabled="Boolean('{{ contact.reply|default_if_none:''|escapejs }}')"
+                    :class="{'opacity-50 cursor-not-allowed': '{{ contact.reply|default_if_none:''|escapejs }}' !== ''}"
+                  >Reply</button>
+
+                  <form method="POST" action="{% url 'contact_delete' contact.id %}" onsubmit="return confirm('Are you sure you want to delete this message?');" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:underline bg-transparent border-0 p-0 cursor-pointer" title="Delete Contact">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="py-4 text-center text-gray-500">No messages found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards List -->
+      <div class="sm:hidden space-y-6">
+        {% for contact in contacts %}
+        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
+          <div class="mb-3">
+            <span class="font-semibold text-gray-500">#:</span> {{ forloop.counter }}
+          </div>
+          <div class="mb-2">
+            <span class="font-semibold text-gray-500">Name:</span> <span class="font-medium text-gray-900">{{ contact.name }}</span>
+          </div>
+          <div class="mb-2 truncate" title="{{ contact.email }}">
+            <span class="font-semibold text-gray-500">Email:</span> {{ contact.email }}
+          </div>
+          <div class="mb-2 truncate" title="{{ contact.subject }}">
+            <span class="font-semibold text-gray-500">Subject:</span> {{ contact.subject }}
+          </div>
+          <div class="mb-4">
+            <span class="font-semibold text-gray-500">Status:</span>
+            <span class="inline-block px-3 py-1 rounded-full
+              {% if contact.status == 'Resolved' %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+              {{ contact.status }}
+            </span>
+          </div>
+          <div class="flex flex-wrap gap-3 text-sm">
+            <button 
+              @click="openModal({ 
+                id: {{ contact.id }},
+                name: '{{ contact.name|escapejs }}',
+                email: '{{ contact.email|escapejs }}',
+                subject: '{{ contact.subject|escapejs }}',
+                status: '{{ contact.status|escapejs }}',
+                message: `{{ contact.message|escapejs }}`,
+                reply: `{{ contact.reply|default_if_none:''|escapejs }}`
+              }, 'view')" 
+              class="text-blue-600 hover:underline cursor-pointer"
+              title="View Contact"
+            >View</button>
+
+            <button 
+              @click="openModal({ 
+                id: {{ contact.id }},
+                name: '{{ contact.name|escapejs }}',
+                email: '{{ contact.email|escapejs }}',
+                subject: '{{ contact.subject|escapejs }}',
+                status: '{{ contact.status|escapejs }}',
+                message: `{{ contact.message|escapejs }}`,
+                reply: `{{ contact.reply|default_if_none:''|escapejs }}`
+              }, 'reply')" 
+              class="text-yellow-600 hover:underline cursor-pointer"
+              title="Reply to Contact"
+              x-bind:disabled="Boolean('{{ contact.reply|default_if_none:''|escapejs }}')"
+              :class="{'opacity-50 cursor-not-allowed': '{{ contact.reply|default_if_none:''|escapejs }}' !== ''}"
+            >Reply</button>
+
+            <form method="POST" action="{% url 'contact_delete' contact.id %}" onsubmit="return confirm('Are you sure you want to delete this message?');" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="text-red-600 hover:underline bg-transparent border-0 p-0 cursor-pointer" title="Delete Contact">Delete</button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-gray-500 py-10">No messages found.</div>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal unchanged -->
+  <div 
+    x-show="isOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6"
+    style="display: none;"
+    @keydown.window.escape="closeModal()"
+    @click="if ($event.target === $el) closeModal()"
+    tabindex="0"
+  >
+    <form 
+      x-ref="modalForm"
+      x-show="isOpen"
+      x-transition.scale.origin.center
+      @submit.prevent="submitForm"
+      method="POST"
+      action="{% url 'contact_reply' %}"
+      class="bg-white rounded-3xl max-w-full sm:max-w-md w-full p-4 sm:p-8 shadow-2xl relative overflow-auto max-h-[85vh]"
+      novalidate
+    >
+      {% csrf_token %}
+      <!-- Close button -->
+      <button
+        @click.prevent="closeModal()"
+        class="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-3xl font-bold focus:outline-none"
+        aria-label="Close modal"
+      >&times;</button>
+
+      <input type="hidden" name="id" :value="modalData.id" />
+
+      <h2 class="text-xl sm:text-2xl font-extrabold text-red-700 mb-4" x-text="modalMode === 'reply' ? 'Reply to Contact' : 'View Contact'"></h2>
+
+      <label class="block font-semibold mt-4 text-sm sm:text-base">Name</label>
+      <input
+        type="text"
+        name="name"
+        class="border rounded p-2 w-full mb-4 bg-gray-100 cursor-not-allowed text-sm sm:text-base"
+        x-model="modalData.name"
+        readonly
+        required
+      />
+
+      <label class="block font-semibold text-sm sm:text-base">Email</label>
+      <input
+        type="email"
+        name="email"
+        class="border rounded p-2 w-full mb-4 bg-gray-100 cursor-not-allowed text-sm sm:text-base"
+        x-model="modalData.email"
+        readonly
+        required
+      />
+
+      <label class="block font-semibold text-sm sm:text-base">Subject</label>
+      <input
+        type="text"
+        name="subject"
+        class="border rounded p-2 w-full mb-4 bg-gray-100 cursor-not-allowed text-sm sm:text-base"
+        x-model="modalData.subject"
+        readonly
+        required
+      />
+
+      <label class="block font-semibold text-sm sm:text-base">Status</label>
+      <select
+        name="status_disabled"
+        class="border rounded p-2 w-full mb-4 text-sm sm:text-base"
+        x-model="modalData.status"
+        disabled
+        required
+      >
+        <option value="Unresolved">Unresolved</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      <input type="hidden" name="status" :value="modalData.status" />
+
+      <label class="block font-semibold text-sm sm:text-base">Message</label>
+      <textarea
+        class="border rounded p-2 w-full mb-4 resize-none bg-gray-100 cursor-not-allowed text-sm sm:text-base"
+        rows="5"
+        x-text="modalData.message"
+        readonly
+      ></textarea>
+
+      <template x-if="modalMode === 'view' && modalData.reply">
+        <div>
+          <label class="block font-semibold text-sm sm:text-base">Reply Message</label>
+          <textarea
+            class="border rounded p-2 w-full mb-4 resize-none bg-gray-100 cursor-not-allowed text-sm sm:text-base"
+            rows="5"
+            readonly
+            x-text="modalData.reply"
+          ></textarea>
+        </div>
+      </template>
+
+      <label class="block font-semibold text-sm sm:text-base" x-show="modalMode === 'reply'">Your Reply</label>
+      <textarea
+        name="reply"
+        class="border rounded p-2 w-full mb-4 resize-y text-sm sm:text-base"
+        rows="6"
+        x-model="replyMessage"
+        :required="modalMode === 'reply'"
+        placeholder="Type your reply here..."
+        x-show="modalMode === 'reply'"
+      ></textarea>
+
+      <template x-if="modalMode === 'reply'">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button
+            type="submit"
+            class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"
+          >
+            Send Reply
+          </button>
+          <button
+            type="button"
+            @click="closeModal()"
+            class="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+        </div>
+      </template>
+
+      <template x-if="modalMode === 'view'">
+        <button 
+          type="button" 
+          @click="modalMode = 'reply'" 
+          class="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 mt-2 w-full sm:w-auto"
+          x-show="!modalData.reply || modalData.reply === ''"
+        >
+          Reply
+        </button>
+      </template>
+    </form>
+  </div>
+</div>
+
+<script>
+  function contactModal() {
+    return {
+      isOpen: false,
+      modalData: {
+        id: null,
+        name: '',
+        email: '',
+        subject: '',
+        status: 'Unresolved',
+        message: '',
+        reply: ''
+      },
+      modalMode: 'view', // 'view' or 'reply'
+      replyMessage: '',
+      openModal(data, mode) {
+        this.modalData = {...data};
+        this.modalMode = mode || 'view';
+        this.replyMessage = this.modalData.reply || '';
+        this.isOpen = true;
+      },
+      closeModal() {
+        this.isOpen = false;
+        this.modalData = {
+          id: null,
+          name: '',
+          email: '',
+          subject: '',
+          status: 'Unresolved',
+          message: '',
+          reply: ''
+        };
+        this.modalMode = 'view';
+        this.replyMessage = '';
+      },
+      submitForm() {
+        if (this.modalMode === 'reply' && !this.replyMessage.trim()) {
+          alert('Please type a reply message.');
+          return;
+        }
+        if (this.modalMode === 'reply') {
+          this.modalData.status = 'Resolved';
+          this.$refs.modalForm.querySelector('input[name="status"]').value = 'Resolved';
+          this.$refs.modalForm.querySelector('textarea[name="reply"]').value = this.replyMessage;
+        }
+        this.$refs.modalForm.submit();
+      }
+    }
+  }
+</script>
+
+<style>
+  /* Prevent overflow on table cells for long text in desktop */
+  td, th {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Styles for readonly textarea */
+  textarea[readonly] {
+    background-color: #f9fafb;
+    resize: none;
+    cursor: not-allowed;
+  }
+
+  button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
+
+{% endblock %}

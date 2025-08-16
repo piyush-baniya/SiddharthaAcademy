@@ -1,0 +1,264 @@
+{% load static custom_filters active_link %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{% endblock title %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'src/output.css' %}" />
+</head>
+<body class="overflow-x-hidden" x-data="{ mobileMenuOpen: false }">
+
+<!-- Mobile Top Navbar -->
+<nav class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow flex items-center justify-between px-4 py-2">
+  <div class="max-w-screen-xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between w-full">
+    <!-- Logo & Brand -->
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <img src="{% static 'src/logo.png' %}" alt="Logo" class="h-10 w-10 rounded-full shadow border-2 border-red-600 bg-white">
+      <span class="text-2xl font-extrabold text-red-600 tracking-tight drop-shadow-sm flex items-center gap-2 whitespace-nowrap
+                   sm:text-xl xs:text-lg
+      ">
+        Siddhartha Academy
+        <i class="fas fa-graduation-cap text-red-500"></i>
+      </span>
+    </div>
+  <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-2xl text-red-700 focus:outline-none">
+    <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div
+  x-show="mobileMenuOpen"
+  @click.away="mobileMenuOpen = false"
+  x-transition
+  class="lg:hidden fixed top-20 left-0 right-0 bg-white border-b border-gray-200 shadow-md z-40 max-h-[calc(100vh-3rem)] overflow-y-auto"
+>
+  <nav class="px-4 py-4">
+    <ul class="flex flex-col space-y-1 text-gray-700 font-semibold text-base">
+
+      <li>
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'dashboard' %}">
+          <i class="fas fa-tachometer-alt w-6 {% if request.resolver_match.url_name == 'dashboard' %}text-red-700{% endif %}"></i>
+          Dashboard
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'list' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'list' %}">
+          <i class="fas fa-user-graduate w-6 {% if request.resolver_match.url_name == 'list' %}text-red-700{% endif %}"></i>
+          Students
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'teachers_list' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'teachers_list' %}">
+          <i class="fas fa-chalkboard-teacher w-6 {% if request.resolver_match.url_name == 'teachers_list' %}text-red-700{% endif %}"></i>
+          Teachers
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'class_list' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'class_list' %}">
+          <i class="fas fa-school w-6 {% if request.resolver_match.url_name == 'class_list' %}text-red-700{% endif %}"></i>
+          Classes
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'contact_list' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'contact_list' %}">
+          <i class="fas fa-phone w-6 {% if request.resolver_match.url_name == 'contact_list' %}text-red-700{% endif %}"></i>
+          Contacts
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'attendance' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'attendance' %}">
+          <i class="fas fa-clipboard-list w-6 {% if request.resolver_match.url_name == 'attendance' %}text-red-700{% endif %}"></i>
+          Attendance
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'examination_list' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'examination_list' %}">
+          <i class="fas fa-file-alt w-6 {% if request.resolver_match.url_name == 'examination_list' %}text-red-700{% endif %}"></i>
+          Exams
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'results_management' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'results_management' %}">
+          <i class="fas fa-poll w-6 {% if request.resolver_match.url_name == 'results_management' %}text-red-700{% endif %}"></i>
+          Result Management
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'settings' %}" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-red-50 hover:text-red-700 {% active_link 'settings' %}">
+          <i class="fas fa-cog w-6 {% if request.resolver_match.url_name == 'settings' %}text-red-700{% endif %}"></i>
+          Settings
+        </a>
+      </li>
+
+      <li class="pt-4 border-t border-gray-200">
+        <a href="/logout/" class="block px-4 py-3 text-gray-600 hover:text-red-600 font-semibold">
+          Sign out
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<div class="min-h-screen bg-gray-50 flex flex-col md:flex-row pt-12 lg:pt-0">
+  <!-- Sidebar -->
+  <aside
+    class="w-full lg:w-xs bg-white border-r border-gray-200 shadow-md lg:block hidden fixed lg:static inset-y-0 top-0 lg:h-screen h-full z-50 overflow-x-hidden lg:overflow-y-auto"
+  >
+    <div class="sticky top-0 bg-white z-20 p-6 flex items-center gap-3 border-b border-gray-200">
+      <a href="/" class="flex items-center gap-3 flex-shrink-0">
+        <img src="{% static 'src/logo.png' %}" alt="Logo" class="w-12 h-12 rounded-full object-cover" />
+        <div>
+          <h3 class="text-xl font-extrabold text-red-700">Siddhartha Academy</h3>
+          <p class="text-xs text-gray-500">Admin Panel</p>
+        </div>
+      </a>
+      <button
+        id="sidebarCloseBtn"
+        class="lg:hidden ml-auto text-gray-600 hover:text-red-600 focus:outline-none"
+        aria-label="Close sidebar"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <nav class="px-6 py-4">
+      <ul class="space-y-2">
+        <li>
+          <a href="{% url 'dashboard' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'dashboard' %}">
+            <i class="fas fa-tachometer-alt w-6 {% if request.resolver_match.url_name == 'dashboard' %}text-red-700{% endif %}"></i>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'list' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'list' %}">
+            <i class="fas fa-user-graduate w-6 {% if request.resolver_match.url_name == 'list' %}text-red-700{% endif %}"></i>
+            Students
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'teachers_list' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'teachers_list' %}">
+            <i class="fas fa-chalkboard-teacher w-6 {% if request.resolver_match.url_name == 'teachers_list' %}text-red-700{% endif %}"></i>
+            Teachers
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'class_list' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'class_list' %}">
+            <i class="fas fa-school w-6 {% if request.resolver_match.url_name == 'class_list' %}text-red-700{% endif %}"></i>
+            Classes
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'contact_list' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'contact_list' %}">
+            <i class="fas fa-phone w-6 {% if request.resolver_match.url_name == 'contact_list' %}text-red-700{% endif %}"></i>
+            Contacts
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'attendance' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'attendance' %}">
+            <i class="fas fa-clipboard-list w-6 {% if request.resolver_match.url_name == 'attendance' %}text-red-700{% endif %}"></i>
+            Attendance
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'examination_list' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'examination_list' %}">
+            <i class="fas fa-file-alt w-6 {% if request.resolver_match.url_name == 'examination_list' %}text-red-700{% endif %}"></i>
+            Exams
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'results_management' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'results_management' %}">
+            <i class="fas fa-poll w-6 {% if request.resolver_match.url_name == 'results_management' %}text-red-700{% endif %}"></i>
+            Result Management
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'settings' %}" 
+             class="flex items-center gap-4 px-5 py-3 rounded-lg text-base {% active_link 'settings' %}">
+            <i class="fas fa-cog w-6 {% if request.resolver_match.url_name == 'settings' %}text-red-700{% endif %}"></i>
+            Settings
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="px-6 mt-auto pb-6">
+      <a href="/logout/" class="block text-sm text-gray-600 hover:text-red-600 font-semibold transition">
+        Sign out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-x-auto min-h-screen pt-4 lg:pt-0 my-4 lg:my-0">
+    {% block content %}
+
+    {% if messages %}
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    {% endif %}
+    {% endblock content %}
+  </main>
+</div>
+
+<!-- Small screen bottom nav -->
+<div class="fixed bottom-4 left-1/2 -translate-x-1/2 lg:hidden w-[95%] z-50">
+  <div class="bg-white p-3 rounded-2xl shadow-lg flex justify-between">
+    <a href="/dashboard/" class="text-center text-xs text-red-600 whitespace-nowrap">
+      <i class="fas fa-home"></i>
+      <div>Dashboard</div>
+    </a>
+    <a href="/manage/students/" class="text-center text-xs text-gray-600 whitespace-nowrap">
+      <i class="fas fa-user-graduate"></i>
+      <div>Students</div>
+    </a>
+    <a href="/manage/contact/list" class="text-center text-xs text-gray-600 whitespace-nowrap">
+      <i class="fas fa-phone"></i>
+      <div>Contacts</div>
+    </a>
+    <a href="/manage/attendance/" class="text-center text-xs text-gray-600 whitespace-nowrap">
+      <i class="fas fa-clipboard-list"></i>
+      <div>Attendance</div>
+    </a>
+    <a href="/manage/settings/" class="text-center text-xs text-gray-600 whitespace-nowrap">
+      <i class="fas fa-cog"></i>
+      <div>Settings</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  // Sidebar toggle for mobile
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('aside');
+    const closeBtn = document.getElementById('sidebarCloseBtn');
+
+    closeBtn?.addEventListener('click', () => {
+      sidebar.classList.add('hidden');
+    });
+  });
+</script>
+
+</body>
+</html>

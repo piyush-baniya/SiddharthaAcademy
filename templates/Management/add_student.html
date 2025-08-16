@@ -1,0 +1,143 @@
+{% extends "Management/base.html" %}
+{% block title %}Add Student — Siddhartha Academy{% endblock %}
+{% block content %}
+<h1 class="text-4xl font-extrabold mb-8 text-center mt-4 text-red-700">Add New Student</h1>
+
+{% if messages %}
+  <ul class="mb-6 space-y-2">
+    {% for message in messages %}
+      <li class="text-sm text-red-600 font-semibold bg-red-100 rounded px-4 py-2 shadow-sm">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-3xl shadow-lg max-w-6xl mx-4 space-y-8">
+  {% csrf_token %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+    <!-- Text Inputs -->
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">First Name<span class="text-red-500">*</span></label>
+      <input type="text" name="first_name" value="{{ student.first_name|default:'' }}" required maxlength="100"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Last Name<span class="text-red-500">*</span></label>
+      <input type="text" name="last_name" value="{{ student.last_name|default:'' }}" required maxlength="100"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Roll Number<span class="text-red-500">*</span></label>
+      <input type="text" name="roll_number" value="{{ student.roll_number|default:'' }}" required maxlength="20"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Date of Birth<span class="text-red-500">*</span></label>
+      <input type="date" name="date_of_birth" value="{{ student.date_of_birth|date:'Y-m-d' }}" required
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+<div>
+  <label class="block mb-2 font-semibold text-gray-700">Classroom<span class="text-red-500">*</span></label>
+  <select
+    name="classroom"
+    required
+    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+  >
+    <option value="">-- Select Class --</option>
+    {% for cls in classes %}
+      <option value="{{ cls.id }}" {% if student.classroom and student.classroom.id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Section</label>
+      <input type="text" name="section" value="{{ student.section|default:'' }}" maxlength="10"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Father's Name<span class="text-red-500">*</span></label>
+      <input type="text" name="father_name" value="{{ student.father_name|default:'' }}" required maxlength="100"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Mother's Name<span class="text-red-500">*</span></label>
+      <input type="text" name="mother_name" value="{{ student.mother_name|default:'' }}" required maxlength="100"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block mb-2 font-semibold text-gray-700">Permanent Address<span class="text-red-500">*</span></label>
+      <textarea name="permanent_address" required maxlength="500"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-red-500 transition">{{ student.permanent_address|default:'' }}</textarea>
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block mb-2 font-semibold text-gray-700">Temporary Address</label>
+      <textarea name="temporary_address" maxlength="500"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-red-500 transition">{{ student.temporary_address|default:'' }}</textarea>
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Student Contact<span class="text-red-500">*</span></label>
+      <input type="text" name="student_contact" value="{{ student.student_contact|default:'' }}" required maxlength="20"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700">Guardian Contact</label>
+      <input type="text" name="guardian_contact" value="{{ student.guardian_contact|default:'' }}" maxlength="20"
+        class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition" />
+    </div>
+
+    <!-- File Inputs -->
+    <div class="md:col-span-2">
+      <label class="block mb-2 font-semibold text-gray-700">Birth Certificate</label>
+      <input type="file" name="birth_certificate" class="w-full border border-gray-300 rounded-lg p-2" />
+      {% if student.birth_certificate %}
+        <p class="mt-1 text-sm text-gray-600">Current file: <a href="{{ student.birth_certificate.url }}" target="_blank" class="text-red-600 underline hover:text-red-800">View</a></p>
+      {% endif %}
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block mb-2 font-semibold text-gray-700">Transfer Certificate</label>
+      <input type="file" name="transfer_certificate" class="w-full border border-gray-300 rounded-lg p-2" />
+      {% if student.transfer_certificate %}
+        <p class="mt-1 text-sm text-gray-600">Current file: <a href="{{ student.transfer_certificate.url }}" target="_blank" class="text-red-600 underline hover:text-red-800">View</a></p>
+      {% endif %}
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block mb-2 font-semibold text-gray-700">Photo</label>
+      <input type="file" name="photo" class="w-full border border-gray-300 rounded-lg p-2" />
+      {% if student.photo %}
+        <div class="mt-2">
+          <img src="{{ student.photo.url }}" alt="Photo" class="w-24 h-24 object-cover rounded-full border-2 border-red-500 shadow-md" />
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Checkbox -->
+    <div class="flex items-center space-x-3 md:col-span-2">
+      <input type="hidden" name="is_active" value="off" />
+      <input type="checkbox" id="is_active" name="is_active" {% if student.is_active %}checked{% endif %}
+        class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded cursor-pointer" />
+      <label for="is_active" class="font-semibold text-gray-700 cursor-pointer select-none">Active</label>
+    </div>
+
+  </div>
+
+  <div class="flex justify-end gap-6 mt-8">
+    <button type="reset" class="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition font-semibold"><a href="/manage/students/">Cancel</a></button>
+    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold shadow-md">Save Student</button>
+  </div>
+</form>
+<br>
+<br>
+{% endblock %}

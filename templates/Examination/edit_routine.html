@@ -1,0 +1,270 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}Edit Exam Routine — Siddhartha Academy{% endblock %}
+
+{% block content %}
+<!-- Alpine.js CDN -->
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<div class="max-w-7xl mx-4 my-4 p-8 bg-white rounded-3xl shadow-lg">
+
+  <h1 class="text-4xl font-extrabold mb-6 text-red-700 border-b-4 border-red-600 pb-2 select-none">
+    Edit Exam Routine
+  </h1>
+
+  <!-- Message Box -->
+{% if messages %}
+  <div class="fixed top-5 right-5 z-50 max-w-xs space-y-3">
+    {% for message in messages %}
+      <div 
+        x-data="{ show: true }" 
+        x-show="show" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 transform translate-x-10"
+        x-transition:enter-end="opacity-100 transform translate-x-0"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform translate-x-0"
+        x-transition:leave-end="opacity-0 transform translate-x-10"
+        x-init="setTimeout(() => show = false, 4000)"
+        class="p-4 rounded-lg shadow-lg flex items-center space-x-3
+          {% if 'error' in message.tags %}
+            bg-red-50 border border-red-400 text-red-800
+          {% else %}
+            bg-green-50 border border-green-400 text-green-800
+          {% endif %}
+        "
+      >
+        <svg class="w-6 h-6 flex-shrink-0
+          {% if 'error' in message.tags %}text-red-600{% else %}text-green-600{% endif %}"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 13l4 4L19 7"></path>
+        </svg>
+        <div class="flex-1 font-semibold text-sm">
+          {{ message }}
+        </div>
+        <button @click="show = false" class="focus:outline-none
+          {% if 'error' in message.tags %}text-red-600 hover:text-red-900{% else %}text-green-600 hover:text-green-900{% endif %}"
+          aria-label="Close notification">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
+
+  <form method="post" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- Top Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <label for="examination_name" class="font-semibold block mb-2 text-gray-700">Examination Name <span class="text-red-600">*</span></label>
+        <input
+          id="examination_name"
+          name="examination_name"
+          required
+          type="text"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+          value="{{ routine.examination_name }}"
+          placeholder="Enter exam name"
+          autocomplete="off"
+        >
+      </div>
+
+      <div>
+        <label for="exam_time" class="font-semibold block mb-2 text-gray-700">Exam Time (optional)</label>
+        <input
+          id="exam_time"
+          name="exam_time"
+          type="text"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+          value="{{ routine.exam_time }}"
+          placeholder="e.g. 10:00 AM - 1:00 PM"
+          autocomplete="off"
+        >
+      </div>
+
+      <div>
+        <label for="note_above" class="font-semibold block mb-2 text-gray-700">Note (above table, optional)</label>
+        <input
+          id="note_above"
+          name="note_above"
+          type="text"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+          value="{{ routine.note_above }}"
+          placeholder="Optional note"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <!-- Routine Table & Controls -->
+    <div x-data="routineBuilder()" x-init="init()" class="overflow-auto border border-gray-300 rounded-2xl shadow-inner p-4">
+
+      <!-- Controls -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <button type="button" @click="addClass()" title="Add a new class column"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl shadow-md transition font-semibold">
+          + Add Class Column
+        </button>
+
+        <button type="button" @click="addRow()" title="Add a new exam date row"
+          class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow-md transition font-semibold">
+          + Add Date Row
+        </button>
+
+        <button type="button" @click="reset()" title="Reset all columns and rows"
+          class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-xl shadow-md transition font-semibold">
+          Reset
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="min-w-max">
+        <table class="w-full table-auto border-collapse border border-gray-300 text-gray-800">
+          <thead class="bg-red-700 text-white sticky top-0 z-20 select-none">
+            <tr>
+              <th class="border border-red-800 p-3 sticky left-0 bg-red-700 z-30 text-center">Exam Date</th>
+              <template x-for="(cls, idx) in classNames" :key="idx">
+                <th class="border border-red-800 p-3 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <input type="text" :name="'class_header_'+idx" x-model="classNames[idx]"
+                      class="bg-transparent font-semibold text-white text-center rounded-md w-full max-w-[140px] px-2 py-1 border border-white/50 focus:outline-none focus:ring-2 focus:ring-white transition"
+                      spellcheck="false" />
+                    <button type="button" @click="removeClass(idx)" title="Remove this class"
+                      class="text-white font-extrabold hover:text-red-300 transition select-none">
+                      ✕
+                    </button>
+                  </div>
+                </th>
+              </template>
+              <th class="border border-red-800 p-3 sticky right-0 bg-red-700 z-30 text-center">Action</th>
+            </tr>
+          </thead>
+
+          <tbody class="bg-white">
+            <template x-for="(row, rindex) in rows" :key="rindex">
+              <tr class="hover:bg-gray-50 transition">
+                <td class="border border-gray-300 p-2 sticky left-0 bg-white z-20 text-center">
+                  <input type="date" :name="'exam_date[]'" x-model="rows[rindex].date" required
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 transition" />
+                </td>
+
+                <template x-for="(cls, cindex) in classNames" :key="cindex">
+                  <td class="border border-gray-300 p-2">
+                    <select :name="`subject_${rindex}_${cindex}`"
+                      class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+                      x-bind:value="rows[rindex].subjects[classNames[cindex]]"
+                      @change="rows[rindex].subjects[classNames[cindex]] = $event.target.value"
+                      >
+                      <option value="">-- Select Subject --</option>
+                      {% for subj in subjects %}
+                        <option value="{{ subj.id }}">{{ subj.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                </template>
+
+                <td class="border border-gray-300 p-2 text-center">
+                  <button type="button" @click="removeRow(rindex)"
+                    class="px-4 py-1 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow transition font-semibold"
+                    title="Remove this date row">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hidden inputs to send class_names[] -->
+      <template x-for="(cls, idx) in classNames" :key="'hidden-'+idx">
+        <input type="hidden" name="class_names[]" :value="cls" />
+      </template>
+    </div>
+
+    <!-- Note below + submit -->
+    <div>
+      <label for="note_below" class="font-semibold block mb-2 text-gray-700">Note (below table, optional)</label>
+      <textarea
+        id="note_below"
+        name="note_below"
+        rows="4"
+        class="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-900 resize-y focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+        placeholder="Add any notes below the routine table...">{{ routine.note_below }}</textarea>
+    </div>
+
+    <div class="flex justify-end gap-4 mt-8">
+      <a href="{% url 'exam:routine_detail' pk=routine.id %}"
+         class="px-7 py-3 border border-gray-400 rounded-xl hover:bg-gray-100 transition text-gray-800 font-semibold select-none">
+         Cancel
+      </a>
+      <button type="submit"
+        class="px-8 py-3 bg-red-600 hover:bg-red-700 transition text-white rounded-xl font-bold select-none">
+        Update Routine
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function routineBuilder() {
+  return {
+    classNames: [],
+    rows: [],
+    init() {
+      // Initialize from backend data passed as JSON
+      this.classNames = {{ class_names|safe }};
+      this.rows = {{ rows|safe }};
+
+      // Ensure subjects dict per row exists
+      this.rows.forEach(r => {
+        if (!r.subjects) r.subjects = {};
+      });
+    },
+    addClass() {
+      const next = this.classNames.length + 1;
+      this.classNames.push('Class ' + next);
+      this.rows.forEach(r => {
+        r.subjects[this.classNames[this.classNames.length - 1]] = "";
+      });
+    },
+    removeClass(idx) {
+      if (this.classNames.length <= 1) {
+        alert('At least one class column required.');
+        return;
+      }
+      const removedClass = this.classNames.splice(idx, 1)[0];
+      this.rows.forEach(r => {
+        delete r.subjects[removedClass];
+      });
+    },
+    addRow() {
+      const emptySubjects = {};
+      this.classNames.forEach(cls => emptySubjects[cls] = "");
+      this.rows.push({ date: '', subjects: emptySubjects });
+    },
+    removeRow(idx) {
+      if (this.rows.length <= 1) {
+        alert('At least one row required.');
+        return;
+      }
+      this.rows.splice(idx, 1);
+    },
+    reset() {
+      if (!confirm('Reset columns and rows? All unsaved changes will be lost.')) return;
+      this.classNames = ['Class 1'];
+      this.rows = [{ date: '', subjects: { 'Class 1': "" } }];
+    }
+  }
+}
+</script>
+
+{% endblock %}

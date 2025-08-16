@@ -1,0 +1,379 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}Students List — Siddhartha Academy{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+{% if messages %}
+  <div 
+    x-data="{ show: true }" 
+    x-show="show" 
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 transform translate-x-10"
+    x-transition:enter-end="opacity-100 transform translate-x-0"
+    x-transition:leave="transition ease-in duration-300"
+    x-transition:leave-start="opacity-100 transform translate-x-0"
+    x-transition:leave-end="opacity-0 transform translate-x-10"
+    x-init="setTimeout(() => show = false, 4000)"
+    class="fixed top-5 right-5 z-50 max-w-xs p-4 bg-green-50 border border-green-400 text-green-800 rounded-lg shadow-lg flex items-center space-x-3"
+  >
+    <svg class="w-6 h-6 flex-shrink-0 text-green-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 13l4 4L19 7"></path>
+    </svg>
+    <div class="flex-1 font-semibold text-sm">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+    <button @click="show = false" class="text-green-600 hover:text-green-900 focus:outline-none" aria-label="Close notification">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+{% endif %}
+
+<div x-data="studentModal()" class="min-h-screen bg-gray-50">
+  <div class="flex flex-col md:flex-row">
+
+    <!-- Sidebar omitted -->
+
+    <main class="flex-1 p-4 sm:p-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800">Students List</h1>
+          <p class="text-sm text-gray-500 mt-1">{{ students|length }} students</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="{% url 'add_student' %}"
+             class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base font-medium shadow-md transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Student
+          </a>
+
+          <div class="hidden sm:flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+            </svg>
+            <input type="text" placeholder="Search students..." class="outline-none text-sm text-gray-700" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+        <table class="min-w-full text-left text-sm text-gray-700">
+          <thead class="bg-gray-100 uppercase text-xs tracking-wide text-gray-600">
+            <tr>
+              <th class="py-3 px-4 w-12">#</th>
+              <th class="py-3 px-4">Name</th>
+              <th class="py-3 px-4">Class</th>
+              <th class="py-3 px-4">Contact</th>
+              <th class="py-3 px-4 w-28">Roll No.</th>
+              <th class="py-3 px-4 w-28">Status</th>
+              <th class="py-3 px-4 w-40 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for student in students %}
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="py-3 px-4 align-top">{{ forloop.counter }}</td>
+              <td class="py-3 px-4 font-medium text-gray-900" title="{{ student.first_name }} {{ student.last_name }}">
+                {{ student.first_name }} {{ student.last_name }}
+              </td>
+              <td class="py-3 px-4" title="{{ student.classroom }}{% if student.section %} - {{ student.section }}{% endif %}">
+                {{ student.classroom }}{% if student.section %} - {{ student.section }}{% endif %}
+              </td>
+              <td class="py-3 px-4">{{ student.student_contact|default:student.guardian_contact }}</td>
+              <td class="py-3 px-4">{{ student.roll_number }}</td>
+              <td class="py-3 px-4">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                  {% if student.is_active %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+                  {% if student.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <div class="flex justify-center gap-4 text-sm">
+                  <button
+                    @click="openViewModal({
+                      id: {{ student.id }},
+                      first_name: '{{ student.first_name|escapejs }}',
+                      last_name: '{{ student.last_name|escapejs }}',
+                      date_of_birth: '{{ student.date_of_birth }}',
+                      roll_number: '{{ student.roll_number|escapejs }}',
+                      classroom: '{{ student.classroom|escapejs }}',
+                      section: '{{ student.section|default:''|escapejs }}',
+                      father_name: '{{ student.father_name|escapejs }}',
+                      mother_name: '{{ student.mother_name|escapejs }}',
+                      permanent_address: `{{ student.permanent_address|escapejs }}`,
+                      temporary_address: `{{ student.temporary_address|default:''|escapejs }}`,
+                      student_contact: '{{ student.student_contact|default:""|escapejs }}',
+                      guardian_contact: '{{ student.guardian_contact|escapejs }}',
+                      is_active: {{ student.is_active|yesno:"true,false" }},
+                      birth_certificate_url: '{% if student.birth_certificate %}{{ student.birth_certificate.url|escapejs }}{% else %}{% endif %}',
+                      transfer_certificate_url: '{% if student.transfer_certificate %}{{ student.transfer_certificate.url|escapejs }}{% else %}{% endif %}',
+                      photo_url: '{% if student.photo %}{{ student.photo.url|escapejs }}{% else %}{% endif %}'  // Added photo_url here
+                    })"
+                    class="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    title="View Student Details"
+                  >View</button>
+
+                  <a href="{% url 'edit_student' student.id %}" class="text-yellow-600 hover:text-yellow-800 font-medium" title="Edit Student">Edit</a>
+
+                  <button
+                    @click="openDeleteModal({ id: {{ student.id }}, first_name: '{{ student.first_name|escapejs }}', last_name: '{{ student.last_name|escapejs }}' })"
+                    class="text-red-600 hover:text-red-800 font-medium"
+                    title="Delete Student"
+                  >Delete</button>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="py-6 text-center text-gray-500">No students found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards List -->
+      <div class="sm:hidden space-y-6">
+        {% for student in students %}
+        <div class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-lg font-bold text-gray-800">{{ student.first_name }} {{ student.last_name }}</div>
+              <p class="text-sm text-gray-500 mt-1">Class: {{ student.classroom}}{% if student.section %} - {{ student.section }}{% endif %}</p>
+            </div>
+            <div class="text-sm">
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                {% if student.is_active %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+                {% if student.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-3 text-sm text-gray-600">
+            <p class="truncate" title="{{ student.student_contact|default:student.guardian_contact }}"><strong>Contact:</strong> {{ student.student_contact|default:student.guardian_contact }}</p>
+            <p class="mt-1"><strong>Roll No.:</strong> {{ student.roll_number }}</p>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-3 text-sm">
+            <button
+              @click="openViewModal({
+                id: {{ student.id }},
+                first_name: '{{ student.first_name|escapejs }}',
+                last_name: '{{ student.last_name|escapejs }}',
+                date_of_birth: '{{ student.date_of_birth }}',
+                roll_number: '{{ student.roll_number|escapejs }}',
+                classroom: '{{ student.classroom|escapejs }}',
+                section: '{{ student.section|default:''|escapejs }}',
+                father_name: '{{ student.father_name|escapejs }}',
+                mother_name: '{{ student.mother_name|escapejs }}',
+                permanent_address: `{{ student.permanent_address|escapejs }}`,
+                temporary_address: `{{ student.temporary_address|default:''|escapejs }}`,
+                student_contact: '{{ student.student_contact|default:""|escapejs }}',
+                guardian_contact: '{{ student.guardian_contact|escapejs }}',
+                is_active: {{ student.is_active|yesno:"true,false" }},
+                birth_certificate_url: '{% if student.birth_certificate %}{{ student.birth_certificate.url|escapejs }}{% else %}{% endif %}',
+                transfer_certificate_url: '{% if student.transfer_certificate %}{{ student.transfer_certificate.url|escapejs }}{% else %}{% endif %}',
+                photo_url: '{% if student.photo %}{{ student.photo.url|escapejs }}{% else %}{% endif %}'  // Added photo_url here
+              })"
+              class="text-blue-600 hover:underline"
+              title="View Student Details"
+            >View</button>
+
+            <a href="{% url 'edit_student' student.id %}" class="text-yellow-600 hover:underline" title="Edit Student">Edit</a>
+
+            <button
+              @click="openDeleteModal({ id: {{ student.id }}, first_name: '{{ student.first_name|escapejs }}', last_name: '{{ student.last_name|escapejs }}' })"
+              class="text-red-600 hover:underline"
+              title="Delete Student"
+            >Delete</button>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-gray-500 py-10">No students found.</div>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+
+  <!-- Floating Add (mobile) -->
+  <a href="{% url 'add_student' %}" class="sm:hidden fixed bottom-24 right-6 z-50">
+    <div class="w-14 h-14 rounded-full bg-red-600 shadow-xl flex items-center justify-center text-white hover:bg-red-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+    </div>
+  </a>
+
+  <!-- Modal for Viewing Student Details -->
+  <div
+    x-show="isViewOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6"
+    style="display: none;"
+    @keydown.window.escape="closeViewModal()"
+    @click="if ($event.target === $el) closeViewModal()"
+    tabindex="0"
+  >
+    <div
+      x-show="isViewOpen"
+      x-transition.scale.origin.center
+      class="bg-white rounded-3xl max-w-full sm:max-w-lg w-full p-6 sm:p-8 shadow-2xl relative overflow-auto max-h-[85vh]"
+      role="dialog" aria-modal="true"
+    >
+      <button
+        @click.prevent="closeViewModal()"
+        class="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-3xl font-bold focus:outline-none"
+        aria-label="Close modal"
+      >&times;</button>
+
+      <h2 class="text-xl sm:text-2xl font-extrabold text-red-700 mb-6">Student Details</h2>
+
+      <div class="space-y-3 text-sm sm:text-base text-gray-700">
+        <!-- Photo display inline with label -->
+<div class="flex items-center space-x-4 mt-3">
+  <strong>Photo:</strong>
+  <template x-if="viewData.photo_url && viewData.photo_url !== ''">
+    <img
+      :src="viewData.photo_url"
+      alt="Student Photo"
+      class="w-16 h-16 rounded-full object-cover border-2 border-red-500 shadow-md"
+    />
+  </template>
+  <template x-if="!viewData.photo_url || viewData.photo_url === ''">
+    <span class="text-gray-500">No photo available</span>
+  </template>
+</div>
+
+        <p><strong>Full Name:</strong> <span x-text="viewData.first_name + ' ' + viewData.last_name"></span></p>
+        <p><strong>Date of Birth:</strong> <span x-text="viewData.date_of_birth || 'N/A'"></span></p>
+        <p><strong>Roll Number:</strong> <span x-text="viewData.roll_number || 'N/A'"></span></p>
+        <p><strong>Class:</strong> <span x-text="viewData.classroom + (viewData.section ? ' - ' + viewData.section : '')"></span></p>
+        <p><strong>Father's Name:</strong> <span x-text="viewData.father_name || 'N/A'"></span></p>
+        <p><strong>Mother's Name:</strong> <span x-text="viewData.mother_name || 'N/A'"></span></p>
+        <p><strong>Permanent Address:</strong> <span x-text="viewData.permanent_address || 'N/A'"></span></p>
+        <p><strong>Temporary Address:</strong> <span x-text="viewData.temporary_address || 'N/A'"></span></p>
+        <p><strong>Student Contact:</strong> <span x-text="viewData.student_contact || 'N/A'"></span></p>
+        <p><strong>Guardian Contact:</strong> <span x-text="viewData.guardian_contact || 'N/A'"></span></p>
+        <p><strong>Status:</strong> <span x-text="viewData.is_active ? 'Active' : 'Inactive'"></span></p>
+
+        <p><strong>Birth Certificate:</strong>
+          <template x-if="viewData.birth_certificate_url">
+            <a :href="viewData.birth_certificate_url" target="_blank" class="text-blue-600 hover:underline">View Document</a>
+          </template>
+          <template x-if="!viewData.birth_certificate_url">
+            <span>N/A</span>
+          </template>
+        </p>
+
+        <p><strong>Transfer Certificate:</strong>
+          <template x-if="viewData.transfer_certificate_url">
+            <a :href="viewData.transfer_certificate_url" target="_blank" class="text-blue-600 hover:underline">View Document</a>
+          </template>
+          <template x-if="!viewData.transfer_certificate_url">
+            <span>N/A</span>
+          </template>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    x-show="isDeleteOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6"
+    style="display: none;"
+    @keydown.window.escape="closeDeleteModal()"
+    @click="if ($event.target === $el) closeDeleteModal()"
+    tabindex="0"
+  >
+    <div
+      x-show="isDeleteOpen"
+      x-transition.scale.origin.center
+      class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative"
+      role="dialog" aria-modal="true"
+    >
+      <button
+        @click.prevent="closeDeleteModal()"
+        class="absolute top-4 right-4 text-gray-500 hover:text-red-600 text-3xl font-bold focus:outline-none"
+        aria-label="Close delete confirmation"
+      >&times;</button>
+
+      <h2 class="text-2xl font-extrabold text-red-700 mb-4 text-center">Delete Student</h2>
+
+      <p class="text-center text-gray-800 mb-2">
+        Are you sure you want to delete
+        <strong x-text="deleteData.first_name + ' ' + deleteData.last_name"></strong>?
+      </p>
+
+      <p class="text-center text-red-600 font-semibold mb-6">This action <span class="underline">cannot be undone</span>.</p>
+
+      <template x-if="errorMessage">
+        <p class="text-center text-red-600 font-semibold mb-4" x-text="errorMessage"></p>
+      </template>
+
+      <form :action="`{% url 'delete_student' 0 %}`.replace('0', deleteData.id)" method="POST" class="flex justify-center gap-6">
+        {% csrf_token %}
+        <button type="submit"
+          class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold transition shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+        >
+          Yes, Delete
+        </button>
+        <button type="button"
+          @click="closeDeleteModal()"
+          class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-full font-semibold transition text-gray-700"
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function studentModal() {
+    return {
+      // View modal state
+      isViewOpen: false,
+      viewData: {},
+
+      // Delete modal state
+      isDeleteOpen: false,
+      deleteData: {},
+      errorMessage: '',
+
+      openViewModal(data) {
+        this.viewData = data;
+        this.isViewOpen = true;
+        this.errorMessage = '';
+        this.$nextTick(() => { try { document.activeElement.blur(); } catch(e){} });
+      },
+      closeViewModal() {
+        this.isViewOpen = false;
+        setTimeout(() => { this.viewData = {}; }, 300);
+      },
+
+      openDeleteModal(data) {
+        this.deleteData = data;
+        this.isDeleteOpen = true;
+        this.errorMessage = '';
+        this.$nextTick(() => { try { document.activeElement.blur(); } catch(e){} });
+      },
+      closeDeleteModal() {
+        this.isDeleteOpen = false;
+        setTimeout(() => { this.deleteData = {}; this.errorMessage = ''; }, 300);
+      },
+    };
+  }
+</script>
+
+{% endblock %}

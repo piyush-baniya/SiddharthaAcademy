@@ -1,0 +1,53 @@
+{% extends "management/base.html" %}
+{% block title %}Enter Extra-Curricular Grades — Siddhartha Academy{% endblock %}
+{% block content %}
+<h1 class="text-4xl font-extrabold mb-8 text-center mt-6 text-red-700">Extra-Curricular Grades for {{ classroom.name }}</h1>
+
+<div class="max-w-6xl mx-auto bg-white p-8 rounded-3xl shadow-lg overflow-x-auto">
+  <form method="POST" class="min-w-full">
+    {% csrf_token %}
+
+    <table class="w-full border-collapse text-left">
+      <thead>
+        <tr class="bg-red-600 text-white">
+          <th class="py-3 px-4">Roll Number</th>
+          <th class="py-3 px-4">Student Name</th>
+          <th class="py-3 px-4">Grade</th>
+          <th class="py-3 px-4">Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr class="border-b hover:bg-gray-50 transition">
+          <td class="py-3 px-4">{{ student.roll_number }}</td>
+          <td class="py-3 px-4">{{ student.first_name }} {{ student.last_name }}</td>
+          <td class="py-3 px-4">
+            <input
+              type="text"
+              name="grade_{{ student.id }}"
+              value="{{ grades_dict|default:{}|dictget:student.id.grade }}"
+              class="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="e.g. A, B+, etc."
+            >
+          </td>
+          <td class="py-3 px-4">
+            <input
+              type="text"
+              name="remarks_{{ student.id }}"
+              value="{{ grades_dict|default:{}|dictget:student.id.remarks }}"
+              class="w-full border border-gray-300 rounded-lg p-2"
+              placeholder="Optional remarks"
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-6 flex justify-end space-x-4">
+      <a href="{% url 'examination_list' %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100">Cancel</a>
+      <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">Save Grades</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
