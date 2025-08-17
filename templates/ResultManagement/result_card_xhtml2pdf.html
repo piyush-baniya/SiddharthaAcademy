@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Result Card</title>
+    <style>
+        @page { size: A4; margin: 1cm; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #000; }
+        .result-card { 
+            background-color: #f4e4a6; 
+            border: 3px solid #8B4513; 
+            padding: 15px; 
+            width: 100%; 
+            box-sizing: border-box;
+        }
+        .header { text-align: center; border-bottom: 2px solid #8B4513; padding-bottom: 10px; margin-bottom: 15px; position: relative; }
+        .school-logo { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 50px; 
+            height: 50px; 
+            border: 2px solid #8B4513; 
+            text-align: center; 
+            line-height: 46px; 
+            font-weight: bold; 
+            color: #8B4513; 
+            background-color: #d4c5a9;
+        }
+        .school-name { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .school-address, .phone { font-size: 12px; color: #34495e; margin-bottom: 3px; }
+        .mark-sheet-title { font-size: 14px; font-weight: bold; text-decoration: underline; margin: 5px 0; }
+        .exam-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+
+        /* Student Info */
+        .student-info { width: 100%; margin-bottom: 15px; }
+        .student-left, .student-right { display: inline-block; vertical-align: top; width: 48%; }
+        .student-right { text-align: right; }
+        .info-row { margin-bottom: 5px; font-size: 12px; color: #2c3e50; }
+
+        /* Marks Table */
+        .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #8B4513; }
+        .marks-table th, .marks-table td { border: 1px solid #8B4513; padding: 5px; font-size: 10px; text-align: center; }
+        .marks-table th { background-color: #d4c5a9; font-weight: bold; }
+        .subject-cell { text-align: left; padding-left: 8px; font-weight: bold; }
+
+        /* Bottom Section */
+        .bottom-section { width: 100%; margin-top: 10px; }
+        .gpa-section, .grading-scale { display: inline-block; vertical-align: top; box-sizing: border-box; }
+        .gpa-section { width: 30%; border: 2px solid #8B4513; background-color: #f8f6e8; padding: 8px; }
+        .grading-scale { width: 65%; margin-left: 5%; border: 2px solid #8B4513; background-color: #f8f6e8; padding: 8px; }
+
+        .gpa-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .gpa-table td { border: 1px solid #8B4513; padding: 4px; }
+        .gpa-label { font-weight: bold; background-color: #d4c5a9; text-align: left; padding-left: 6px; }
+        .gpa-value { text-align: center; font-weight: bold; }
+
+        .grading-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        .grading-table th, .grading-table td { border: 1px solid #8B4513; padding: 3px; text-align: center; }
+        .grading-table th { background-color: #d4c5a9; font-weight: bold; }
+
+        /* Quality Section */
+        .quality-section { clear: both; border: 2px solid #8B4513; background-color: #f8f6e8; padding: 8px; margin-top: 15px; }
+        .quality-title { text-align: center; font-weight: bold; margin-bottom: 8px; font-size: 12px; }
+        .quality-grid { width: 100%; }
+        .quality-col { display: inline-block; vertical-align: top; width: 48%; }
+        .quality-item { font-size: 10px; margin-bottom: 2px; overflow: hidden; }
+        .quality-label { float: left; }
+        .quality-grade { float: right; font-weight: bold; }
+
+        /* Remarks Section */
+        .remarks-section { border: 2px solid #8B4513; background-color: #f8f6e8; padding: 10px; margin-top: 15px; clear: both; }
+        .remarks-title { font-weight: bold; font-size: 12px; margin-bottom: 5px; }
+        .remarks-text { font-size: 10px; line-height: 1.3; text-align: justify; }
+
+        /* Signature Section */
+        .signature-section { width: 100%; margin-top: 15px; font-size: 10px; }
+        .signature-item { display: inline-block; width: 23%; text-align: center; margin-right: 1%; }
+        .signature-line { border-top: 1px solid #8B4513; padding-top: 5px; margin-top: 25px; }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="school-logo">SA</div>
+            <div class="school-name">{{ school_info.name }}</div>
+            <div class="school-address">{{ school_info.address }}</div>
+            <div class="phone">Phone :- {{ school_info.phone }}</div>
+            <div class="mark-sheet-title">MARK SHEET</div>
+            <div class="exam-title">{{ exam.name }}</div>
+        </div>
+
+        <!-- Student Information -->
+        <div class="student-info">
+            <div class="student-left">
+                <div class="info-row"><strong>Name : {{ student.first_name|upper }} {{ student.last_name|upper }}</strong></div>
+                <div class="info-row"><strong>Class : {{ student.classroom.name|upper }}</strong></div>
+            </div>
+            <div class="student-right">
+                <div class="info-row"><strong>Date Of Birth : {{ student.date_of_birth|date:"m/d/Y" }}</strong></div>
+                <div class="info-row"><strong>Section : {% if student.section %}{{ student.section|upper }}{% else %}{{ student.classroom.section|upper|default:"A" }}{% endif %}        Roll No. : {{ student.roll_number }}</strong></div>
+            </div>
+        </div>
+
+        <!-- Marks Table -->
+        <table class="marks-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">S.N</th>
+                    <th rowspan="2">Subjects</th>
+                    <th rowspan="2">Full<br/>Marks</th>
+                    <th rowspan="2">Pass<br/>Marks</th>
+                    <th colspan="2">Terminal Exam</th>
+                    <th rowspan="2">Grade</th>
+                    <th rowspan="2">Grade<br/>Point</th>
+                </tr>
+                <tr>
+                    <th>Th</th>
+                    <th>Pr</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in subject_results %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="subject-cell">{{ result.subject.name }}</td>
+                    <td>{% if result.exam_config.has_practical %}{{ result.exam_config.full_theory_marks|add:result.exam_config.full_practical_marks|floatformat:0 }}{% else %}{{ result.exam_config.full_theory_marks|floatformat:0 }}{% endif %}</td>
+                    <td>{% if result.exam_config.has_practical %}{{ result.exam_config.pass_theory_marks|add:result.exam_config.pass_practical_marks|floatformat:0 }}{% else %}{{ result.exam_config.pass_theory_marks|floatformat:0 }}{% endif %}</td>
+                    <td>{% if result.theory_marks %}{{ result.theory_marks|floatformat:0 }}{% else %}-{% endif %}</td>
+                    <td>{% if result.practical_marks and result.exam_config.has_practical %}{{ result.practical_marks|floatformat:0 }}{% else %}{% if result.exam_config.has_practical %}-{% else %}{{ result.grade }}{% endif %}{% endif %}</td>
+                    <td>{{ result.grade }}</td>
+                    <td>{{ result.grade_point|floatformat:1 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">No results available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <div class="gpa-section">
+                <table class="gpa-table">
+                    <tr><td class="gpa-label">GPA</td><td class="gpa-value">{{ overall_result.cgpa|floatformat:2 }}</td></tr>
+                    <tr><td class="gpa-label">Grade</td><td class="gpa-value">{{ overall_result.overall_grade }}</td></tr>
+                    <tr><td class="gpa-label">Rank</td><td class="gpa-value">-</td></tr>
+                    <tr><td class="gpa-label">Percentage</td><td class="gpa-value">{{ overall_result.overall_percentage|floatformat:1 }}</td></tr>
+                    <tr><td class="gpa-label">Attendance</td><td class="gpa-value">{{ attendance_days }} / {{ total_days }}</td></tr>
+                </table>
+            </div>
+
+            <div class="grading-scale">
+                <table class="grading-table">
+                    <thead>
+                        <tr><th>Percentage</th><th>Grade</th><th>Remarks</th><th>GP</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>90 to 100</td><td>A+</td><td>Outstanding</td><td>4</td></tr>
+                        <tr><td>80 to below 90</td><td>A</td><td>Excellent</td><td>3.6</td></tr>
+                        <tr><td>70 to below 80</td><td>B+</td><td>Very Good</td><td>3.2</td></tr>
+                        <tr><td>60 to below 70</td><td>B</td><td>Good</td><td>2.8</td></tr>
+                        <tr><td>50 to below 60</td><td>C+</td><td>Satisfactory</td><td>2.4</td></tr>
+                        <tr><td>40 to below 50</td><td>C</td><td>Acceptable</td><td>2</td></tr>
+                        <tr><td>35 to below 40</td><td>D</td><td>Basic</td><td>1.6</td></tr>
+                        <tr><td>0 to below 35</td><td>NG</td><td>Non Graded</td><td>0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quality Section -->
+        <div class="quality-section">
+            <div class="quality-title">Quality Measure Group</div>
+            <div class="quality-grid">
+                <div class="quality-col">
+                    <div class="quality-item"><span class="quality-label">1. Drawing</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">2. Vocal</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">3. Dance</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">4. Games</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                </div>
+                <div class="quality-col">
+                    <div class="quality-item"><span class="quality-label">5. Home Work</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">6. Discipline</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">7. Attendance</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                    <div class="quality-item"><span class="quality-label">8. Yoga</span><span class="quality-grade">{{ overall_result.extracurricular_grade|default:"A+" }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remarks -->
+        <div class="remarks-section">
+            <div class="remarks-title">Remarks:</div>
+            <div class="remarks-text">
+                {% if overall_result.extracurricular_remarks %}
+                    {{ overall_result.extracurricular_remarks }}
+                {% else %}
+                    {{ student.first_name }} is a sincere and intelligent student. {% if overall_result.overall_grade == 'A+' %}He/She has shown outstanding performance{% elif overall_result.overall_grade == 'A' %}He/She has shown excellent performance{% else %}He/She has shown good performance{% endif %} during this term exam. {% if overall_result.is_promoted %}He/She is promoted to the next class.{% else %}He/She needs to improve in some subjects.{% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature-section">
+            <div class="signature-item date-item">Date: {{ current_date|date:"d/m/Y" }}</div>
+            <div class="signature-item"><div class="signature-line">School Seal</div></div>
+            <div class="signature-item"><div class="signature-line">Class Teacher</div></div>
+            <div class="signature-item"><div class="signature-line">Principal</div></div>
+        </div>
+    </div>
+</body>
+</html>

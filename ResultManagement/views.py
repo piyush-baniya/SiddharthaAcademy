@@ -472,105 +472,6 @@ def check_marks_status(request):
 
 
 
-
-from django.http import HttpResponse
-from django.template.loader import get_template
-from django.shortcuts import get_object_or_404
-from io import BytesIO
-import os
-
-try:
-    from xhtml2pdf import pisa
-    XHTML2PDF_AVAILABLE = True
-except ImportError:
-    XHTML2PDF_AVAILABLE = False
-
-from django.http import HttpResponse
-from django.template.loader import get_template
-from django.shortcuts import get_object_or_404
-from io import BytesIO
-from xhtml2pdf import pisa
-from django.contrib.staticfiles import finders
-
-@login_required
-def generate_result_pdf(request, student_id, exam_id):
-    """Generate PDF result card using xhtml2pdf (Windows compatible)"""
-    
-    # Get student and exam data
-    student = get_object_or_404(Student, id=student_id)
-    exam = get_object_or_404(Examination, id=exam_id)
-    
-    # Get student's overall result
-    overall_result = StudentOverallResult.objects.filter(
-        student=student, 
-        examination=exam
-    ).first()
-    
-    if not overall_result:
-        messages.error(request, "No results found for this student in this exam.")
-        return redirect('result:view_results')
-    
-    # Get all subject results
-    subject_results = StudentResult.objects.filter(
-        student=student,
-        examination=exam
-    ).select_related('subject', 'exam_config').order_by('subject__name')
-    
-    # School information
-    school_info = {
-        'name': 'Siddhartha Academy',
-        'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
-        'phone': '01- 6615178'
-    }
-    
-    # Context data
-    context = {
-        'student': student,
-        'exam': exam,
-        'overall_result': overall_result,
-        'subject_results': subject_results,
-        'school_info': school_info,
-        'attendance_days': 59,
-        'total_days': 67,
-        'current_date': exam.date,
-    }
-    
-    # Get template and render HTML
-    template = get_template('ResultManagement/result_card_pdf.html')
-    html_string = template.render(context)
-    
-    # Create PDF
-    result = BytesIO()
-    pdf = pisa.pisaDocument(
-        BytesIO(html_string.encode("UTF-8")), 
-        result,
-        encoding='UTF-8'
-    )
-    
-    if not pdf.err:
-        filename = f"result_card_{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    
-    return HttpResponse("Error generating PDF", status=500)
-
-def generate_pdf_xhtml2pdf(request, context):
-    """Alternative PDF generation using xhtml2pdf"""
-    template = get_template('ResultManagement/result_card_pdf.html')
-    html_string = template.render(context)
-    
-    # Create PDF
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
-    
-    if not pdf.err:
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="result_card_{context["student"].roll_number}_{context["exam"].name}.pdf"'
-        return response
-    
-    return HttpResponse("Error generating PDF", status=500)
-
 @login_required
 def view_result_html(request, student_id, exam_id):
     """View result card as HTML (for testing/preview)"""
@@ -611,15 +512,394 @@ def view_result_html(request, student_id, exam_id):
     return render(request, 'ResultManagement/result_card_pdf.html', context)
 
 
+
+# Add to views.py
+from playwright.sync_api import sync_playwright
+import tempfile
+import os
+
+@login_required
+def generate_result_pdf(request, student_id, exam_id):
+    """Generate PDF using Playwright - exact HTML rendering"""
+    
+    student = get_object_or_404(Student, id=student_id)
+    exam = get_object_or_404(Examination, id=exam_id)
+    
+    overall_result = StudentOverallResult.objects.filter(
+        student=student, examination=exam
+    ).first()
+    
+    if not overall_result:
+        messages.error(request, "No results found for this student.")
+        return redirect('result:view_results')
+    
+    subject_results = StudentResult.objects.filter(
+        student=student, examination=exam
+    ).select_related('subject', 'exam_config').order_by('subject__name')
+    
+    context = {
+        'student': student,
+        'exam': exam,
+        'overall_result': overall_result,
+        'subject_results': subject_results,
+        'school_info': {
+            'name': 'Siddhartha Academy',
+            'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+            'phone': '01- 6615178'
+        },
+        'attendance_days': 59,
+        'total_days': 67,
+        'current_date': exam.date,
+    }
+    
+    # Use your existing HTML template
+    template = get_template('ResultManagement/result_card_pdf.html')
+    html_content = template.render(context)
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            
+            # Set page content
+            page.set_content(html_content)
+            
+            # Generate PDF with exact HTML rendering
+            pdf_bytes = page.pdf(
+                format='A4',
+                print_background=True,  # Include background colors/images
+                margin={
+                    'top': '10mm',
+                    'bottom': '10mm',
+                    'left': '8mm',
+                    'right': '8mm'
+                }
+            )
+            
+            browser.close()
+            
+            filename = f"result_{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
+            response = HttpResponse(pdf_bytes, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+            
+    except Exception as e:
+        messages.error(request, f"PDF generation failed: {str(e)}")
+        return redirect('result:view_results')
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Updated views.py - Playwright Bulk PDF Generation
+
+from playwright.sync_api import sync_playwright
+import zipfile
+from io import BytesIO
+from django.http import HttpResponse
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import get_template
+from django.contrib.auth.decorators import login_required, user_passes_test
+
 @login_required
 @user_passes_test(is_admin)
 def generate_class_results_pdf(request, exam_id, class_id):
-    """Generate PDF for all students in a class"""
+    """Generate PDF for all students in a class using Playwright - FIXED ASYNC ISSUE"""
     
     examination = get_object_or_404(Examination, id=exam_id)
     classroom = get_object_or_404(Class, id=class_id)
     
-    # Get all students with results
+    # Get all students with results - DEBUG: Print count
+    students = Student.objects.filter(
+        classroom=classroom,
+        is_active=True,
+        overall_results__examination=examination
+    ).order_by('roll_number')
+    
+    print(f"DEBUG: Found {students.count()} students")
+    
+    if not students:
+        messages.error(request, "No students with results found for this class and exam.")
+        return redirect('result:view_results')
+    
+    # CRITICAL FIX: Gather ALL data BEFORE starting Playwright
+    # This prevents async context issues
+    students_data = []
+    
+    for student in students:
+        overall_result = StudentOverallResult.objects.filter(
+            student=student, examination=examination
+        ).first()
+        
+        if overall_result:
+            subject_results = StudentResult.objects.filter(
+                student=student, examination=examination
+            ).select_related('subject', 'exam_config').order_by('subject__name')
+            
+            # Convert QuerySet to list to avoid async issues
+            subject_results_list = list(subject_results)
+            
+            student_data = {
+                'student': student,
+                'overall_result': overall_result,
+                'subject_results': subject_results_list,
+                'context': {
+                    'student': student,
+                    'exam': examination,
+                    'overall_result': overall_result,
+                    'subject_results': subject_results_list,
+                    'school_info': {
+                        'name': 'Siddhartha Academy',
+                        'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+                        'phone': '01- 6615178'
+                    },
+                    'attendance_days': 59,
+                    'total_days': 67,
+                    'current_date': examination.date,
+                }
+            }
+            students_data.append(student_data)
+    
+    print(f"DEBUG: Prepared data for {len(students_data)} students")
+    
+    if not students_data:
+        messages.error(request, "No students have complete result data.")
+        return redirect('result:view_results')
+    
+    zip_filename = f"{examination.name}_{classroom.name}_results.zip"
+    pdf_count = 0
+    error_count = 0
+    
+    try:
+        # Create zip file in memory
+        zip_buffer = BytesIO()
+        
+        with sync_playwright() as p:
+            # Launch browser once for all PDFs (more efficient)
+            browser = p.chromium.launch(headless=True)
+            print("DEBUG: Browser launched")
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                
+                for student_data in students_data:
+                    try:
+                        student = student_data['student']
+                        context = student_data['context']
+                        
+                        print(f"DEBUG: Processing student {student.first_name} {student.last_name}")
+                        
+                        # Render HTML using pre-gathered data
+                        template = get_template('ResultManagement/result_card_pdf.html')
+                        html_content = template.render(context)
+                        
+                        print(f"DEBUG: HTML content length: {len(html_content)}")
+                        
+                        # Create new page for this student
+                        page = browser.new_page()
+                        
+                        # Set page content with timeout
+                        page.set_content(html_content, wait_until='domcontentloaded', timeout=30000)
+                        
+                        # Wait a bit more for any dynamic content
+                        page.wait_for_timeout(1000)
+                        
+                        # Generate PDF with exact HTML rendering
+                        pdf_bytes = page.pdf(
+                            format='A4',
+                            print_background=True,  # Include background colors/images
+                            margin={
+                                'top': '10mm',
+                                'bottom': '10mm',
+                                'left': '8mm',
+                                'right': '8mm'
+                            }
+                        )
+                        
+                        print(f"DEBUG: Generated PDF size: {len(pdf_bytes)} bytes")
+                        
+                        # Close the page
+                        page.close()
+                        
+                        # Validate PDF bytes
+                        if len(pdf_bytes) > 0:
+                            # Add PDF to ZIP with student name
+                            pdf_filename = f"{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
+                            zip_file.writestr(pdf_filename, pdf_bytes)
+                            pdf_count += 1
+                            print(f"DEBUG: Added {pdf_filename} to ZIP")
+                        else:
+                            print(f"ERROR: Empty PDF generated for {student}")
+                            error_count += 1
+                            
+                    except Exception as e:
+                        # Log error but continue with other students
+                        print(f"ERROR generating PDF for {student_data['student']}: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
+                        error_count += 1
+                        continue
+            
+            # Close browser
+            browser.close()
+            print(f"DEBUG: Browser closed. Generated {pdf_count} PDFs, {error_count} errors")
+        
+        # Check if ZIP has content
+        zip_buffer.seek(0)
+        zip_size = len(zip_buffer.getvalue())
+        print(f"DEBUG: ZIP file size: {zip_size} bytes")
+        
+        if zip_size <= 22:  # Empty ZIP file is ~22 bytes
+            messages.error(request, f"No PDFs were generated successfully. Check server logs for details. Processed {len(students_data)} students, {error_count} errors.")
+            return redirect('result:view_results')
+        
+        zip_buffer.seek(0)
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
+        messages.success(request, f"Generated {pdf_count} PDFs successfully!")
+        return response
+        
+    except Exception as e:
+        print(f"CRITICAL ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, f"Bulk PDF generation failed: {str(e)}")
+        return redirect('result:view_results')
+
+
+# ALTERNATIVE SIMPLE VERSION - Add this as backup
+
+@login_required
+@user_passes_test(is_admin)
+def generate_class_results_pdf_simple(request, exam_id, class_id):
+    """Simplified version for debugging"""
+    
+    examination = get_object_or_404(Examination, id=exam_id)
+    classroom = get_object_or_404(Class, id=class_id)
+    
+    # Simplified query - get ALL active students first
+    students = Student.objects.filter(
+        classroom=classroom,
+        is_active=True
+    ).order_by('roll_number')
+    
+    print(f"DEBUG: Found {students.count()} active students in {classroom.name}")
+    
+    if not students:
+        messages.error(request, "No active students found in this class.")
+        return redirect('result:view_results')
+    
+    # Filter students who actually have results
+    students_with_results = []
+    for student in students:
+        overall_result = StudentOverallResult.objects.filter(
+            student=student, examination=examination
+        ).first()
+        if overall_result:
+            students_with_results.append(student)
+    
+    print(f"DEBUG: Found {len(students_with_results)} students with results")
+    
+    if not students_with_results:
+        messages.error(request, f"No students have results for {examination.name} in {classroom.name}")
+        return redirect('result:view_results')
+    
+    # Try to generate just ONE PDF first
+    try:
+        student = students_with_results[0]  # Test with first student
+        
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            
+            # Get student data
+            overall_result = StudentOverallResult.objects.filter(
+                student=student, examination=examination
+            ).first()
+            
+            subject_results = StudentResult.objects.filter(
+                student=student, examination=examination
+            ).select_related('subject', 'exam_config').order_by('subject__name')
+            
+            context = {
+                'student': student,
+                'exam': examination,
+                'overall_result': overall_result,
+                'subject_results': subject_results,
+                'school_info': {
+                    'name': 'Siddhartha Academy',
+                    'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+                    'phone': '01- 6615178'
+                },
+                'attendance_days': 59,
+                'total_days': 67,
+                'current_date': examination.date,
+            }
+            
+            # Test HTML rendering
+            template = get_template('ResultManagement/result_card_pdf.html')
+            html_content = template.render(context)
+            
+            print(f"DEBUG: HTML content length: {len(html_content)}")
+            
+            # Set content and generate PDF
+            page.set_content(html_content, wait_until='domcontentloaded')
+            pdf_bytes = page.pdf(format='A4', print_background=True)
+            
+            browser.close()
+            
+            # Return single PDF for testing
+            if len(pdf_bytes) > 0:
+                filename = f"test_{student.first_name}_{student.last_name}.pdf"
+                response = HttpResponse(pdf_bytes, content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                messages.success(request, f"Test PDF generated successfully! Size: {len(pdf_bytes)} bytes")
+                return response
+            else:
+                messages.error(request, "Generated PDF is empty")
+                return redirect('result:view_results')
+                
+    except Exception as e:
+        print(f"CRITICAL ERROR in simple version: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, f"Test PDF generation failed: {str(e)}")
+        return redirect('result:view_results')
+import asyncio
+from playwright.async_api import async_playwright
+
+@login_required
+@user_passes_test(is_admin)
+def generate_class_results_pdf_async(request, exam_id, class_id):
+    """Async version for better performance with large classes"""
+    
+    examination = get_object_or_404(Examination, id=exam_id)
+    classroom = get_object_or_404(Class, id=class_id)
+    
     students = Student.objects.filter(
         classroom=classroom,
         is_active=True,
@@ -630,18 +910,36 @@ def generate_class_results_pdf(request, exam_id, class_id):
         messages.error(request, "No students with results found for this class and exam.")
         return redirect('result:view_results')
     
-    # Create a ZIP file containing all PDFs
-    import zipfile
-    from django.http import HttpResponse
-    
-    zip_filename = f"{examination.name}_{classroom.name}_results.zip"
-    
-    # Create zip file in memory
-    zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+    async def generate_bulk_pdfs():
+        zip_buffer = BytesIO()
         
-        for student in students:
-            # Generate PDF for each student
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                
+                # Process multiple students concurrently
+                tasks = []
+                
+                for student in students:
+                    task = generate_student_pdf(browser, student, examination, zip_file)
+                    tasks.append(task)
+                
+                # Process up to 5 PDFs concurrently (adjust based on server capacity)
+                semaphore = asyncio.Semaphore(5)
+                
+                async def bounded_task(task):
+                    async with semaphore:
+                        return await task
+                
+                await asyncio.gather(*[bounded_task(task) for task in tasks])
+            
+            await browser.close()
+        
+        return zip_buffer
+    
+    async def generate_student_pdf(browser, student, examination, zip_file):
+        try:
             overall_result = StudentOverallResult.objects.filter(
                 student=student, examination=examination
             ).first()
@@ -651,29 +949,185 @@ def generate_class_results_pdf(request, exam_id, class_id):
                     student=student, examination=examination
                 ).select_related('subject', 'exam_config').order_by('subject__name')
                 
-                school_info = {
-                    'name': 'Siddhartha Academy',
-                    'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
-                    'phone': '01- 6615178'
-                }
-                
                 context = {
                     'student': student,
                     'exam': examination,
                     'overall_result': overall_result,
                     'subject_results': subject_results,
-                    'school_info': school_info,
+                    'school_info': {
+                        'name': 'Siddhartha Academy',
+                        'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+                        'phone': '01- 6615178'
+                    },
                     'attendance_days': 59,
                     'total_days': 67,
                     'current_date': examination.date,
                 }
                 
                 template = get_template('ResultManagement/result_card_pdf.html')
-                html_string = template.render(context)
+                html_content = template.render(context)
+                
+                page = await browser.new_page()
+                await page.set_content(html_content, wait_until='networkidle')
+                
+                pdf_bytes = await page.pdf(
+                    format='A4',
+                    print_background=True,
+                    margin={
+                        'top': '10mm',
+                        'bottom': '10mm', 
+                        'left': '8mm',
+                        'right': '8mm'
+                    }
+                )
+                
+                await page.close()
+                
+                pdf_filename = f"{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
+                zip_file.writestr(pdf_filename, pdf_bytes)
+                
+        except Exception as e:
+            print(f"Error generating PDF for {student}: {str(e)}")
     
-    zip_buffer.seek(0)
+    try:
+        # Run async function
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        zip_buffer = loop.run_until_complete(generate_bulk_pdfs())
+        loop.close()
+        
+        zip_buffer.seek(0)
+        zip_filename = f"{examination.name}_{classroom.name}_results.zip"
+        
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Bulk PDF generation failed: {str(e)}")
+        return redirect('result:view_results')
+
+
+# Progress tracking version (optional - for large classes)
+from django.http import JsonResponse
+from django.core.cache import cache
+
+@login_required
+@user_passes_test(is_admin)
+def generate_class_results_pdf_with_progress(request, exam_id, class_id):
+    """Generate PDFs with progress tracking for large classes"""
     
-    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+    examination = get_object_or_404(Examination, id=exam_id)
+    classroom = get_object_or_404(Class, id=class_id)
     
-    return response
+    students = Student.objects.filter(
+        classroom=classroom,
+        is_active=True,
+        overall_results__examination=examination
+    ).order_by('roll_number')
+    
+    if not students:
+        messages.error(request, "No students with results found for this class and exam.")
+        return redirect('result:view_results')
+    
+    total_students = students.count()
+    progress_key = f"bulk_pdf_progress_{exam_id}_{class_id}_{request.user.id}"
+    
+    # Initialize progress
+    cache.set(progress_key, {'completed': 0, 'total': total_students, 'status': 'processing'}, 300)
+    
+    try:
+        zip_buffer = BytesIO()
+        
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                
+                for index, student in enumerate(students, 1):
+                    try:
+                        # Generate PDF (same code as above)
+                        overall_result = StudentOverallResult.objects.filter(
+                            student=student, examination=examination
+                        ).first()
+                        
+                        if overall_result:
+                            # ... (PDF generation code same as above)
+                            subject_results = StudentResult.objects.filter(
+                                student=student, examination=examination
+                            ).select_related('subject', 'exam_config').order_by('subject__name')
+                            
+                            context = {
+                                'student': student,
+                                'exam': examination,
+                                'overall_result': overall_result,
+                                'subject_results': subject_results,
+                                'school_info': {
+                                    'name': 'Siddhartha Academy',
+                                    'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+                                    'phone': '01- 6615178'
+                                },
+                                'attendance_days': 59,
+                                'total_days': 67,
+                                'current_date': examination.date,
+                            }
+                            
+                            template = get_template('ResultManagement/result_card_pdf.html')
+                            html_content = template.render(context)
+                            
+                            page = browser.new_page()
+                            page.set_content(html_content, wait_until='networkidle')
+                            
+                            pdf_bytes = page.pdf(
+                                format='A4',
+                                print_background=True,
+                                margin={
+                                    'top': '10mm',
+                                    'bottom': '10mm',
+                                    'left': '8mm', 
+                                    'right': '8mm'
+                                }
+                            )
+                            
+                            page.close()
+                            
+                            pdf_filename = f"{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
+                            zip_file.writestr(pdf_filename, pdf_bytes)
+                        
+                        # Update progress
+                        cache.set(progress_key, {
+                            'completed': index, 
+                            'total': total_students, 
+                            'status': 'processing',
+                            'current_student': f"{student.first_name} {student.last_name}"
+                        }, 300)
+                        
+                    except Exception as e:
+                        print(f"Error generating PDF for {student}: {str(e)}")
+                        continue
+            
+            browser.close()
+        
+        # Mark as completed
+        cache.set(progress_key, {'completed': total_students, 'total': total_students, 'status': 'completed'}, 300)
+        
+        zip_buffer.seek(0)
+        zip_filename = f"{examination.name}_{classroom.name}_results.zip"
+        
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
+        return response
+        
+    except Exception as e:
+        cache.set(progress_key, {'completed': 0, 'total': total_students, 'status': 'error', 'error': str(e)}, 300)
+        messages.error(request, f"Bulk PDF generation failed: {str(e)}")
+        return redirect('result:view_results')
+
+@login_required
+def bulk_pdf_progress(request, exam_id, class_id):
+    """API endpoint to check bulk PDF generation progress"""
+    progress_key = f"bulk_pdf_progress_{exam_id}_{class_id}_{request.user.id}"
+    progress = cache.get(progress_key, {'completed': 0, 'total': 0, 'status': 'not_started'})
+    return JsonResponse(progress)

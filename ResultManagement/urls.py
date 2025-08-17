@@ -27,5 +27,11 @@ urlpatterns = [
     # Result PDF generation
     path('pdf/<int:student_id>/<int:exam_id>/', views.generate_result_pdf, name='generate_result_pdf'),
     path('html/<int:student_id>/<int:exam_id>/', views.view_result_html, name='view_result_html'),
-    path('bulk-pdf/<int:exam_id>/<int:class_id>/', views.generate_class_results_pdf, name='generate_class_results_pdf'),
+
+
+    # Add to urls.py
+    path('bulk-pdf-playwright/<int:exam_id>/<int:class_id>/', views.generate_class_results_pdf, name='generate_class_results_pdf_playwright'),
+
+    # Optional: Progress tracking
+    path('bulk-pdf-progress/<int:exam_id>/<int:class_id>/',  views.bulk_pdf_progress,  name='bulk_pdf_progress'),
 ]
