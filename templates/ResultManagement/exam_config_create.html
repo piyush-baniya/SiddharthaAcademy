@@ -1,0 +1,209 @@
+{% load custom_filters %}
+<!-- ResultManagement/templates/ResultManagement/exam_config_create.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Exam Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Configure Exam Settings</h1>
+                    <p class="text-gray-600 mt-2">
+                        {{ examination.name }} - {{ classroom.name }}
+                        <span class="text-sm text-gray-500">({{ examination.date }})</span>
+                    </p>
+                </div>
+                <a href="{% url 'result:exam_configuration_list' %}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    ← Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-blue-600 text-white px-6 py-4">
+                    <h2 class="text-xl font-semibold">Subject Configuration</h2>
+                    <p class="text-blue-100 text-sm mt-1">Set full marks and pass marks for each subject</p>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Theory Full Marks</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Theory Pass Marks</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Has Practical</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Practical Full Marks</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Practical Pass Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for class_subject in class_subjects %}
+                            {% with subject=class_subject.subject %}
+                            {% with config=existing_configs|get_item:subject.id %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-semibold">{{ subject.name|first }}</span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ subject.name }}</div>
+                                            <div class="text-sm text-gray-500">Teacher: {{ class_subject.teacher.full_name|default:"Not Assigned" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="full_theory_{{ subject.id }}" 
+                                           value="{{ config.full_theory_marks|default:100 }}"
+                                           min="1" max="500" step="0.01"
+                                           class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                           required>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="pass_theory_{{ subject.id }}" 
+                                           value="{{ config.pass_theory_marks|default:40 }}"
+                                           min="1" max="500" step="0.01"
+                                           class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                           required>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="checkbox" 
+                                           name="has_practical_{{ subject.id }}" 
+                                           {% if config.has_practical %}checked{% endif %}
+                                           class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded practical-checkbox"
+                                           data-subject="{{ subject.id }}">
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="full_practical_{{ subject.id }}" 
+                                           value="{{ config.full_practical_marks|default:50 }}"
+                                           min="0" max="500" step="0.01"
+                                           class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center practical-input"
+                                           data-subject="{{ subject.id }}"
+                                           {% if not config.has_practical %}disabled{% endif %}>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="pass_practical_{{ subject.id }}" 
+                                           value="{{ config.pass_practical_marks|default:20 }}"
+                                           min="0" max="500" step="0.01"
+                                           class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center practical-input"
+                                           data-subject="{{ subject.id }}"
+                                           {% if not config.has_practical %}disabled{% endif %}>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No subjects found</p>
+                                        <p class="text-sm">Please add subjects to this class first.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between bg-white rounded-lg shadow-md p-6">
+                <div class="text-sm text-gray-600">
+                    <p><strong>Note:</strong> Full marks should be greater than pass marks.</p>
+                    <p>Enable practical marks only for subjects that have practical components.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'result:exam_configuration_setup' %}" 
+                       class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Handle practical checkbox toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const practicalCheckboxes = document.querySelectorAll('.practical-checkbox');
+            
+            practicalCheckboxes.forEach(checkbox => {
+                const subjectId = checkbox.dataset.subject;
+                const practicalInputs = document.querySelectorAll(`.practical-input[data-subject="${subjectId}"]`);
+                
+                checkbox.addEventListener('change', function() {
+                    practicalInputs.forEach(input => {
+                        if (this.checked) {
+                            input.disabled = false;
+                            input.classList.remove('bg-gray-100');
+                            input.classList.add('bg-white');
+                        } else {
+                            input.disabled = true;
+                            input.value = '0';
+                            input.classList.remove('bg-white');
+                            input.classList.add('bg-gray-100');
+                        }
+                    });
+                });
+                
+                // Initial state
+                if (!checkbox.checked) {
+                    practicalInputs.forEach(input => {
+                        input.classList.add('bg-gray-100');
+                    });
+                }
+            });
+            
+            // Form validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const fullMarksInputs = document.querySelectorAll('input[name^="full_theory_"]');
+                const passMarksInputs = document.querySelectorAll('input[name^="pass_theory_"]');
+                
+                let isValid = true;
+                
+                fullMarksInputs.forEach((fullInput, index) => {
+                    const passInput = passMarksInputs[index];
+                    const fullMarks = parseFloat(fullInput.value);
+                    const passMarks = parseFloat(passInput.value);
+                    
+                    if (passMarks >= fullMarks) {
+                        alert(`Pass marks cannot be greater than or equal to full marks for ${fullInput.closest('tr').querySelector('td .text-sm.font-medium').textContent}`);
+                        isValid = false;
+                        passInput.focus();
+                        return false;
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

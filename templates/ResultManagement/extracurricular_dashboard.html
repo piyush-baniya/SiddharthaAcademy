@@ -1,0 +1,230 @@
+<!-- ResultManagement/templates/ResultManagement/extracurricular_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracurricular Grades Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Extracurricular Grades</h1>
+                <p class="text-gray-600 mt-2">Manage extracurricular activities and remarks for your classes</p>
+            </div>
+            <a href="{% url 'result:view_results' %}" 
+               class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-200 shadow-sm">
+                📊 View Results
+            </a>
+        </div>
+
+        <!-- Selection Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Select Class and Examination</h2>
+            <form method="get" action="{% url 'result:enter_extracurricular_grades' 0 0 %}" id="selectionForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Examination Selection -->
+                    <div>
+                        <label for="examination" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Examination *
+                        </label>
+                        <select name="examination" id="examination" required
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Choose an examination...</option>
+                            {% for exam in examinations %}
+                                <option value="{{ exam.id }}">
+                                    {{ exam.name }} - {{ exam.date|date:"M d, Y" }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Class Selection -->
+                    <div>
+                        <label for="classroom" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Class *
+                        </label>
+                        <select name="classroom" id="classroom" required
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Choose a class...</option>
+                            {% for class in classes %}
+                                <option value="{{ class.id }}">
+                                    {{ class.name }}{% if class.section %} - {{ class.section }}{% endif %}
+                                    ({{ class.students.count }} students)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" 
+                            class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200">
+                        Continue to Grade Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Classes Overview -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4">
+                <h2 class="text-xl font-semibold">Your Classes</h2>
+                <p class="text-green-100 text-sm mt-1">Classes where you are the class teacher</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Active Students</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subjects</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Recent Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for class in classes %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <span class="text-green-600 font-semibold">{{ class.name|first }}</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ class.name }}</div>
+                                        {% if class.section %}
+                                        <div class="text-sm text-gray-500">Section: {{ class.section }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-sm text-gray-900">{{ class.students.count }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-sm text-gray-900">{{ class.students.filter.is_active=True.count }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-sm text-gray-900">{{ class.subjects.count }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    No recent activity
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H5a2 2 0 00-2 2v11a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No classes assigned</h3>
+                                    <p class="text-gray-500 mb-4">You are not assigned as a class teacher for any classes.</p>
+                                    <p class="text-sm text-gray-400">Contact the administrator to get class teacher assignments.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Information Cards -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center mb-4">
+                    <div class="p-2 rounded-full bg-blue-100">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">About Extracurricular Grades</h3>
+                </div>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Rate students' participation in activities</li>
+                    <li>• Add personalized remarks for each student</li>
+                    <li>• Grades are included in overall results</li>
+                    <li>• Help track holistic development</li>
+                </ul>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center mb-4">
+                    <div class="p-2 rounded-full bg-green-100">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">Grading Guidelines</h3>
+                </div>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• <strong>Excellent:</strong> Outstanding participation</li>
+                    <li>• <strong>Good:</strong> Active involvement</li>
+                    <li>• <strong>Average:</strong> Regular participation</li>
+                    <li>• <strong>Needs Improvement:</strong> Limited involvement</li>
+                </ul>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center mb-4">
+                    <div class="p-2 rounded-full bg-purple-100">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="ml-3 text-lg font-medium text-gray-900">Remarks Tips</h3>
+                </div>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Be specific and constructive</li>
+                    <li>• Mention specific achievements</li>
+                    <li>• Suggest areas for improvement</li>
+                    <li>• Keep remarks professional and encouraging</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form handling
+        document.getElementById('selectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const examination = document.getElementById('examination').value;
+            const classroom = document.getElementById('classroom').value;
+            
+            if (!examination || !classroom) {
+                alert('Please select both examination and class to continue.');
+                return;
+            }
+            
+            // Redirect to the extracurricular grades entry page
+            window.location.href = `/result/extracurricular/enter/${examination}/${classroom}/`;
+        });
+
+        // Dynamic form enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const examinationSelect = document.getElementById('examination');
+            const classroomSelect = document.getElementById('classroom');
+            
+            // Add success states
+            [examinationSelect, classroomSelect].forEach(select => {
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        this.classList.add('border-green-300', 'bg-green-50');
+                    } else {
+                        this.classList.remove('border-green-300', 'bg-green-50');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

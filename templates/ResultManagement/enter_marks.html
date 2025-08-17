@@ -1,0 +1,377 @@
+<!-- ResultManagement/templates/ResultManagement/enter_marks.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Marks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Enter Marks</h1>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-gray-600">
+                            <span class="font-medium">Exam:</span> {{ config.examination.name }}
+                        </p>
+                        <p class="text-gray-600">
+                            <span class="font-medium">Class:</span> {{ config.classroom.name }}
+                        </p>
+                        <p class="text-gray-600">
+                            <span class="font-medium">Subject:</span> {{ config.subject.name }}
+                        </p>
+                        <div class="flex items-center space-x-6 mt-3 text-sm">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                Theory: {{ config.full_theory_marks }} marks (Pass: {{ config.pass_theory_marks }})
+                            </span>
+                            {% if config.has_practical %}
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                                Practical: {{ config.full_practical_marks }} marks (Pass: {{ config.pass_practical_marks }})
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'result:marks_entry_dashboard' %}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Marks Entry Form -->
+        <form method="post" class="space-y-6" id="marksForm">
+            {% csrf_token %}
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-indigo-600 text-white px-6 py-4">
+                    <h2 class="text-xl font-semibold">Student Marks Entry</h2>
+                    <p class="text-indigo-100 text-sm mt-1">Enter marks for each student (leave blank for absent/not attempted)</p>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No.</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Theory Marks
+                                    <div class="text-xs font-normal text-gray-400 mt-1">(Max: {{ config.full_theory_marks }})</div>
+                                </th>
+                                {% if config.has_practical %}
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Practical Marks
+                                    <div class="text-xs font-normal text-gray-400 mt-1">(Max: {{ config.full_practical_marks }})</div>
+                                </th>
+                                {% endif %}
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for student in students %}
+                            {% with result=existing_results|get_item:student.id %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200" data-student="{{ student.id }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full">
+                                        <span class="text-sm font-medium text-gray-700">{{ student.roll_number }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                            <span class="text-indigo-600 font-semibold text-sm">{{ student.first_name|first }}{{ student.last_name|first }}</span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ student.first_name }} {{ student.last_name }}</div>
+                                            <div class="text-sm text-gray-500">{{ student.classroom.name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="theory_{{ student.id }}" 
+                                           value="{% if result.theory_marks %}{{ result.theory_marks }}{% endif %}"
+                                           min="0" max="{{ config.full_theory_marks }}" step="0.01"
+                                           class="theory-input w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center transition-colors duration-200"
+                                           data-student="{{ student.id }}"
+                                           data-config="{{ config.id }}"
+                                           placeholder="0">
+                                </td>
+                                {% if config.has_practical %}
+                                <td class="px-6 py-4 text-center">
+                                    <input type="number" 
+                                           name="practical_{{ student.id }}" 
+                                           value="{% if result.practical_marks %}{{ result.practical_marks }}{% endif %}"
+                                           min="0" max="{{ config.full_practical_marks }}" step="0.01"
+                                           class="practical-input w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center transition-colors duration-200"
+                                           data-student="{{ student.id }}"
+                                           data-config="{{ config.id }}"
+                                           placeholder="0">
+                                </td>
+                                {% endif %}
+                                <td class="px-6 py-4 text-center">
+                                    <div class="status-indicator-{{ student.id }} text-sm font-medium">
+                                        {% if result %}
+                                            {% if result.is_passed %}
+                                                <span class="text-green-600 bg-green-100 px-2 py-1 rounded-full">Pass</span>
+                                            {% else %}
+                                                <span class="text-red-600 bg-red-100 px-2 py-1 rounded-full">Fail</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-gray-400">-</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if config.has_practical %}5{% else %}4{% endif %}" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No students found</p>
+                                        <p class="text-sm">Please add students to this class first.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistics Panel -->
+            {% if students %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Students</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ students|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Theory Pass Mark</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ config.pass_theory_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if config.has_practical %}
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Practical Pass Mark</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ config.pass_practical_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between bg-white rounded-lg shadow-md p-6">
+                <div class="text-sm text-gray-600">
+                    <p><strong>Note:</strong> Marks will be validated in real-time.</p>
+                    <p>Green = Pass, Red = Fail. Leave blank for absent students.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" onclick="clearAllMarks()" 
+                            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
+                        Clear All
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                        Save Marks
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Configuration data
+        const config = {
+            id: {{ config.id }},
+            passTheory: {{ config.pass_theory_marks }},
+            passPractical: {{ config.pass_practical_marks|default:0 }},
+            hasPractical: {{ config.has_practical|yesno:"true,false" }}
+        };
+
+        // Real-time marks validation
+        function validateMarks(studentId) {
+            const theoryInput = document.querySelector(`input[name="theory_${studentId}"]`);
+            const practicalInput = document.querySelector(`input[name="practical_${studentId}"]`);
+            const statusIndicator = document.querySelector(`.status-indicator-${studentId}`);
+
+            const theoryMarks = parseFloat(theoryInput.value) || 0;
+            const practicalMarks = config.hasPractical ? (parseFloat(practicalInput?.value) || 0) : 0;
+
+            // Reset colors
+            theoryInput.classList.remove('border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50');
+            if (practicalInput) {
+                practicalInput.classList.remove('border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50');
+            }
+
+            // Check theory marks
+            const theoryPassed = theoryMarks >= config.passTheory;
+            if (theoryInput.value !== '') {
+                if (theoryPassed) {
+                    theoryInput.classList.add('border-green-500', 'bg-green-50');
+                } else {
+                    theoryInput.classList.add('border-red-500', 'bg-red-50');
+                }
+            }
+
+            // Check practical marks
+            let practicalPassed = true;
+            if (config.hasPractical && practicalInput) {
+                practicalPassed = practicalMarks >= config.passPractical;
+                if (practicalInput.value !== '') {
+                    if (practicalPassed) {
+                        practicalInput.classList.add('border-green-500', 'bg-green-50');
+                    } else {
+                        practicalInput.classList.add('border-red-500', 'bg-red-50');
+                    }
+                }
+            }
+
+            // Update status
+            const overallPassed = theoryPassed && practicalPassed;
+            if (theoryInput.value !== '' || (practicalInput && practicalInput.value !== '')) {
+                if (overallPassed) {
+                    statusIndicator.innerHTML = '<span class="text-green-600 bg-green-100 px-2 py-1 rounded-full">Pass</span>';
+                } else {
+                    statusIndicator.innerHTML = '<span class="text-red-600 bg-red-100 px-2 py-1 rounded-full">Fail</span>';
+                }
+            } else {
+                statusIndicator.innerHTML = '<span class="text-gray-400">-</span>';
+            }
+        }
+
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theory inputs
+            document.querySelectorAll('.theory-input').forEach(input => {
+                const studentId = input.dataset.student;
+                input.addEventListener('input', function() {
+                    validateMarks(studentId);
+                });
+                input.addEventListener('blur', function() {
+                    validateMarks(studentId);
+                });
+                // Initial validation
+                validateMarks(studentId);
+            });
+
+            // Practical inputs
+            document.querySelectorAll('.practical-input').forEach(input => {
+                const studentId = input.dataset.student;
+                input.addEventListener('input', function() {
+                    validateMarks(studentId);
+                });
+                input.addEventListener('blur', function() {
+                    validateMarks(studentId);
+                });
+            });
+
+            // Form validation before submit
+            document.getElementById('marksForm').addEventListener('submit', function(e) {
+                let hasErrors = false;
+                const inputs = document.querySelectorAll('input[type="number"]');
+                
+                inputs.forEach(input => {
+                    const value = parseFloat(input.value);
+                    const max = parseFloat(input.getAttribute('max'));
+                    
+                    if (input.value !== '' && (isNaN(value) || value < 0 || value > max)) {
+                        hasErrors = true;
+                        input.classList.add('border-red-500');
+                        input.focus();
+                    }
+                });
+
+                if (hasErrors) {
+                    e.preventDefault();
+                    alert('Please check the entered marks. Some values are invalid.');
+                }
+            });
+        });
+
+        // Utility functions
+        function clearAllMarks() {
+            if (confirm('Are you sure you want to clear all entered marks?')) {
+                document.querySelectorAll('input[type="number"]').forEach(input => {
+                    input.value = '';
+                    input.classList.remove('border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50');
+                });
+                
+                document.querySelectorAll('[class*="status-indicator-"]').forEach(indicator => {
+                    indicator.innerHTML = '<span class="text-gray-400">-</span>';
+                });
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + S to save
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('marksForm').submit();
+            }
+            
+            // Escape to clear current input
+            if (e.key === 'Escape' && document.activeElement.tagName === 'INPUT') {
+                document.activeElement.value = '';
+                const studentId = document.activeElement.dataset.student;
+                if (studentId) {
+                    validateMarks(studentId);
+                }
+            }
+        });
+
+        // Auto-save functionality (optional)
+        let autoSaveTimeout;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                // Implement auto-save logic here if needed
+                console.log('Auto-save triggered');
+            }, 30000); // Auto-save after 30 seconds of inactivity
+        }
+
+        // Schedule auto-save on any input change
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', scheduleAutoSave);
+        });
+    </script>
+</body>
+</html>

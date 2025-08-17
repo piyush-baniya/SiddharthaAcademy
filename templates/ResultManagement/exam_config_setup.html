@@ -1,0 +1,164 @@
+<!-- ResultManagement/templates/ResultManagement/exam_config_setup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Exam Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Setup Exam Configuration</h1>
+                    <p class="text-gray-600 mt-2">Select examination and class to configure marks settings</p>
+                </div>
+                <a href="{% url 'result:exam_configuration_list' %}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    ← Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- Setup Form -->
+        <div class="max-w-2xl mx-auto">
+            <form method="post" class="bg-white rounded-lg shadow-md p-8">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- Examination Selection -->
+                    <div>
+                        <label for="examination" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Examination *
+                        </label>
+                        <select name="examination" id="examination" required
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Choose an examination...</option>
+                            {% for exam in examinations %}
+                                <option value="{{ exam.id }}">
+                                    {{ exam.name }} - {{ exam.subject.name }} ({{ exam.date }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-sm text-gray-500 mt-1">Select the examination for which you want to configure marks.</p>
+                    </div>
+
+                    <!-- Class Selection -->
+                    <div>
+                        <label for="classroom" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Class *
+                        </label>
+                        <select name="classroom" id="classroom" required
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Choose a class...</option>
+                            {% for class in classes %}
+                                <option value="{{ class.id }}">
+                                    {{ class.name }}{% if class.section %} - {{ class.section }}{% endif %}
+                                    {% if class.class_teacher %}({{ class.class_teacher.full_name }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-sm text-gray-500 mt-1">Select the class for which you want to configure marks.</p>
+                    </div>
+
+                    <!-- Information Box -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-blue-800">What happens next?</h3>
+                                <div class="mt-2 text-sm text-blue-700">
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li>You'll configure full marks and pass marks for each subject</li>
+                                        <li>You can enable/disable practical marks for subjects that need them</li>
+                                        <li>Teachers will then be able to enter marks based on your configuration</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <div class="text-sm text-gray-500">
+                            * Required fields
+                        </div>
+                        <div class="flex space-x-4">
+                            <a href="{% url 'result:exam_configuration_list' %}" 
+                               class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
+                                Cancel
+                            </a>
+                            <button type="submit" 
+                                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+                                Continue Setup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ examinations|length }}</div>
+                <div class="text-gray-600">Total Examinations</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ classes|length }}</div>
+                <div class="text-gray-600">Total Classes</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2">0</div>
+                <div class="text-gray-600">Configured Combinations</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const examination = document.getElementById('examination').value;
+            const classroom = document.getElementById('classroom').value;
+            
+            if (!examination || !classroom) {
+                e.preventDefault();
+                alert('Please select both examination and class to continue.');
+                return false;
+            }
+        });
+
+        // Dynamic form enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const examinationSelect = document.getElementById('examination');
+            const classroomSelect = document.getElementById('classroom');
+            
+            // Add loading states
+            examinationSelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('border-green-300', 'bg-green-50');
+                } else {
+                    this.classList.remove('border-green-300', 'bg-green-50');
+                }
+            });
+            
+            classroomSelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('border-green-300', 'bg-green-50');
+                } else {
+                    this.classList.remove('border-green-300', 'bg-green-50');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

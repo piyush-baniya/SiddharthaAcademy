@@ -1,0 +1,265 @@
+<!-- ResultManagement/templates/ResultManagement/view_results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Student Results</h1>
+                <p class="text-gray-600 mt-2">View comprehensive student results with GPA and grades</p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{% url 'result:marks_entry_dashboard' %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    📝 Enter Marks
+                </a>
+                <a href="{% url 'result:extracurricular_grades_dashboard' %}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    🎭 Extracurricular
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Filter Results</h2>
+            <form method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Examination Selection -->
+                    <div>
+                        <label for="exam" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Examination
+                        </label>
+                        <select name="exam" id="exam" 
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Examinations</option>
+                            {% for exam in examinations %}
+                                <option value="{{ exam.id }}" {% if exam.id|stringformat:"s" == request.GET.exam %}selected{% endif %}>
+                                    {{ exam.name }} - {{ exam.date|date:"M d, Y" }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Class Selection -->
+                    <div>
+                        <label for="class" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Class
+                        </label>
+                        <select name="class" id="class" 
+                                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Classes</option>
+                            {% for class in classes %}
+                                <option value="{{ class.id }}" {% if class.id|stringformat:"s" == request.GET.class %}selected{% endif %}>
+                                    {{ class.name }}{% if class.section %} - {{ class.section }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+                        Filter Results
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if examination and classroom %}
+        <!-- Results Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-900">{{ examination.name }} Results</h2>
+                    <p class="text-gray-600 mt-1">{{ classroom.name }}{% if classroom.section %} - {{ classroom.section }}{% endif %} | {{ examination.date|date:"F d, Y" }}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600">Total Students</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ results|length }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        {% if results %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4">
+                <h3 class="text-xl font-semibold">Detailed Results</h3>
+                <p class="text-purple-100 text-sm mt-1">Complete academic performance overview</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No.</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subject Results</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Overall</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CGPA</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for result_data in results %}
+                        {% with student=result_data.student overall=result_data.overall_result subject_results=result_data.subject_results %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                        <span class="text-purple-600 font-semibold text-sm">{{ student.first_name|first }}{{ student.last_name|first }}</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ student.first_name }} {{ student.last_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ student.classroom.name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-sm font-medium text-gray-900">{{ student.roll_number }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="space-y-1">
+                                    {% for subject_result in subject_results %}
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <span class="text-xs text-gray-600">{{ subject_result.subject.name }}:</span>
+                                        {% if subject_result.is_passed %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                {{ subject_result.grade }} ({{ subject_result.total_marks }})
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                {{ subject_result.grade }} ({{ subject_result.total_marks }})
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if overall %}
+                                <div class="text-sm">
+                                    <div class="font-medium text-gray-900">{{ overall.total_marks_obtained }}/{{ overall.total_full_marks }}</div>
+                                    <div class="text-gray-500">{{ overall.overall_percentage|floatformat:1 }}%</div>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if overall.cgpa %}
+                                    <div class="text-lg font-semibold text-gray-900">{{ overall.cgpa|floatformat:2 }}</div>
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if overall.overall_grade %}
+                                    {% if overall.overall_grade == "A+" %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                            {{ overall.overall_grade }}
+                                        </span>
+                                    {% elif overall.overall_grade == "A" %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                            {{ overall.overall_grade }}
+                                        </span>
+                                    {% elif overall.overall_grade == "B+" or overall.overall_grade == "B" %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                            {{ overall.overall_grade }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                            {{ overall.overall_grade }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if overall.is_promoted %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Promoted
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Not Promoted
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button onclick="viewDetailedResult({{ student.id }})" 
+                                            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                        View Details
+                                    </button>
+                                    <span class="text-gray-300">|</span>
+                                    <button onclick="generatePDF({{ student.id }})" 
+                                            class="text-green-600 hover:text-green-900 text-sm font-medium">
+                                        PDF
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ results|length }}</div>
+                <div class="text-gray-600 text-sm">Total Students</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">0</div>
+                <div class="text-gray-600 text-sm">Promoted</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-red-600 mb-2">0</div>
+                <div class="text-gray-600 text-sm">Not Promoted</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2">0.00</div>
+                <div class="text-gray-600 text-sm">Average CGPA</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 text-center">
+                <div class="text-3xl font-bold text-orange-600 mb-2">0%</div>
+                <div class="text-gray-600 text-sm">Pass Rate</div>
+            </div>
+        </div>
+        {% else %}
+        <!-- No Results Message -->
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No results found</h3>
+            <p class="text-gray-500 mb-4">No results available for the selected examination and class.</p>
+        </div>
+        {% endif %}
+        {% else %}
+        <!-- Initial State -->
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00">
+
+{% endblock %}

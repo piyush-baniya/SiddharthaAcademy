@@ -1,0 +1,330 @@
+<!-- ResultManagement/templates/ResultManagement/enter_extracurricular.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Extracurricular Grades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Extracurricular Grades</h1>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-gray-600">
+                            <span class="font-medium">Examination:</span> {{ examination.name }}
+                        </p>
+                        <p class="text-gray-600">
+                            <span class="font-medium">Class:</span> {{ classroom.name }}{% if classroom.section %} - {{ classroom.section }}{% endif %}
+                        </p>
+                        <p class="text-gray-600">
+                            <span class="font-medium">Date:</span> {{ examination.date|date:"F d, Y" }}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'result:extracurricular_grades_dashboard' %}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Grading Guidelines -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-blue-900 mb-3">Grading Guidelines</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="font-medium text-green-700">Excellent</div>
+                    <div class="text-gray-600 text-xs mt-1">Outstanding participation and leadership</div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="font-medium text-blue-700">Good</div>
+                    <div class="text-gray-600 text-xs mt-1">Active involvement in activities</div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="font-medium text-yellow-700">Average</div>
+                    <div class="text-gray-600 text-xs mt-1">Regular participation</div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="font-medium text-red-700">Needs Improvement</div>
+                    <div class="text-gray-600 text-xs mt-1">Limited involvement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grades Entry Form -->
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4">
+                    <h2 class="text-xl font-semibold">Student Extracurricular Assessment</h2>
+                    <p class="text-green-100 text-sm mt-1">Rate each student's participation in extracurricular activities</p>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No.</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for student in students %}
+                            {% with existing=existing_results|get_item:student.id %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full">
+                                        <span class="text-sm font-medium text-gray-700">{{ student.roll_number }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                            <span class="text-green-600 font-semibold text-sm">{{ student.first_name|first }}{{ student.last_name|first }}</span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ student.first_name }} {{ student.last_name }}</div>
+                                            <div class="text-sm text-gray-500">{{ student.classroom.name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <select name="grade_{{ student.id }}" 
+                                            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        <option value="">Select Grade</option>
+                                        <option value="Excellent" {% if existing.extracurricular_grade == "Excellent" %}selected{% endif %}>Excellent</option>
+                                        <option value="Good" {% if existing.extracurricular_grade == "Good" %}selected{% endif %}>Good</option>
+                                        <option value="Average" {% if existing.extracurricular_grade == "Average" %}selected{% endif %}>Average</option>
+                                        <option value="Needs Improvement" {% if existing.extracurricular_grade == "Needs Improvement" %}selected{% endif %}>Needs Improvement</option>
+                                    </select>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <textarea name="remarks_{{ student.id }}" 
+                                              rows="2" 
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                              placeholder="Enter specific remarks about student's participation..."
+                                              maxlength="500">{% if existing.extracurricular_remarks %}{{ existing.extracurricular_remarks }}{% endif %}</textarea>
+                                    <div class="text-xs text-gray-400 mt-1">Character limit: 500</div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                        </svg>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">No students found</h3>
+                                        <p class="text-sm text-gray-500">There are no active students in this class.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistics Panel -->
+            {% if students %}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Students</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ students|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Already Graded</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ existing_results|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Pending</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ students|length|add:existing_results|length|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Class Teacher</p>
+                            <p class="text-lg font-semibold text-gray-900">You</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button type="button" onclick="setAllGrades('Excellent')" 
+                            class="px-4 py-2 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition duration-200">
+                        Set All Excellent
+                    </button>
+                    <button type="button" onclick="setAllGrades('Good')" 
+                            class="px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition duration-200">
+                        Set All Good
+                    </button>
+                    <button type="button" onclick="setAllGrades('Average')" 
+                            class="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200 transition duration-200">
+                        Set All Average
+                    </button>
+                    <button type="button" onclick="clearAllGrades()" 
+                            class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition duration-200">
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between bg-white rounded-lg shadow-md p-6">
+                <div class="text-sm text-gray-600">
+                    <p><strong>Note:</strong> Grades and remarks help in overall student assessment.</p>
+                    <p>Be constructive and specific in your remarks.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" onclick="saveAsDraft()" 
+                            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
+                        Save as Draft
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200">
+                        Save Grades
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Quick action functions
+        function setAllGrades(grade) {
+            const selects = document.querySelectorAll('select[name^="grade_"]');
+            selects.forEach(select => {
+                select.value = grade;
+                select.dispatchEvent(new Event('change'));
+            });
+        }
+
+        function clearAllGrades() {
+            if (confirm('Are you sure you want to clear all grades and remarks?')) {
+                const selects = document.querySelectorAll('select[name^="grade_"]');
+                const textareas = document.querySelectorAll('textarea[name^="remarks_"]');
+                
+                selects.forEach(select => {
+                    select.value = '';
+                });
+                
+                textareas.forEach(textarea => {
+                    textarea.value = '';
+                });
+            }
+        }
+
+        function saveAsDraft() {
+            alert('Draft save functionality will be implemented in the next version.');
+        }
+
+        // Character count for textareas
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareas = document.querySelectorAll('textarea[name^="remarks_"]');
+            
+            textareas.forEach(textarea => {
+                const charCounter = textarea.nextElementSibling;
+                
+                textarea.addEventListener('input', function() {
+                    const remaining = 500 - this.value.length;
+                    charCounter.textContent = `Characters remaining: ${remaining}`;
+                    
+                    if (remaining < 50) {
+                        charCounter.classList.add('text-red-500');
+                        charCounter.classList.remove('text-gray-400');
+                    } else {
+                        charCounter.classList.remove('text-red-500');
+                        charCounter.classList.add('text-gray-400');
+                    }
+                });
+            });
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const filledGrades = document.querySelectorAll('select[name^="grade_"]');
+            let hasGrades = false;
+            
+            filledGrades.forEach(select => {
+                if (select.value) {
+                    hasGrades = true;
+                }
+            });
+            
+            if (!hasGrades) {
+                if (!confirm('No grades have been assigned. Are you sure you want to continue?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Auto-save functionality (every 30 seconds)
+        let autoSaveInterval;
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                // Implement auto-save logic here
+                console.log('Auto-saving...');
+            }, 30000);
+        }
+
+        // Start auto-save when page loads
+        document.addEventListener('DOMContentLoaded', startAutoSave);
+
+        // Clear auto-save when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+        });
+    </script>
+</body>
+</html>
