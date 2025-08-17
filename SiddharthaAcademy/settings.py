@@ -51,9 +51,10 @@ INSTALLED_APPS = [
     'core',
     'management',
     'ExamManagement',
-    'reportlab',  # if you use reportlab for PDF generation
     'Authentication',
     'ResultManagement',
+    'xhtml2pdf',
+    'reportlab',
 ]
 
 

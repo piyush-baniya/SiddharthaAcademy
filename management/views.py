@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Contact, Student, Teacher, Class, ClassSubject, Subject, Examination, ExtraCurricularGrade, StudentExamMark
 from django.db.models import Prefetch
+from django.contrib.auth.models import User
+
 
 # ---------- STUDENTS ----------
 
@@ -82,10 +84,25 @@ def teacher_list(request):
         )
     ).all()
     return render(request, 'management/teacher_list.html', {'teachers': teachers})
+    
 
 def add_teacher(request):
     class_subjects = ClassSubject.objects.all().select_related('classroom', 'subject')
 
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        email = request.POST.get('email')
+        
+        # Create User account if email provided
+        user = None
+        if email:
+            username = email.split('@')[0]  # Use email prefix as username
+            if not User.objects.filter(email=email).exists():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password='temporary123'  # Set temporary password
+                )
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
         email = request.POST.get('email') or None
@@ -105,6 +122,7 @@ def add_teacher(request):
 
         # Create teacher object
         teacher = Teacher.objects.create(
+            user=user,
             full_name=full_name,
             email=email,
             phone=phone,

@@ -23,4 +23,9 @@ urlpatterns = [
     
     # AJAX URLs
     path('ajax/check-marks/', views.check_marks_status, name='check_marks_status'),
+
+    # Result PDF generation
+    path('pdf/<int:student_id>/<int:exam_id>/', views.generate_result_pdf, name='generate_result_pdf'),
+    path('html/<int:student_id>/<int:exam_id>/', views.view_result_html, name='view_result_html'),
+    path('bulk-pdf/<int:exam_id>/<int:class_id>/', views.generate_class_results_pdf, name='generate_class_results_pdf'),
 ]

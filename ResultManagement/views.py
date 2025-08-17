@@ -455,3 +455,225 @@ def check_marks_status(request):
         return JsonResponse(response)
     
     return JsonResponse({'error': 'Invalid request method'})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.shortcuts import get_object_or_404
+from io import BytesIO
+import os
+
+try:
+    from xhtml2pdf import pisa
+    XHTML2PDF_AVAILABLE = True
+except ImportError:
+    XHTML2PDF_AVAILABLE = False
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.shortcuts import get_object_or_404
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.contrib.staticfiles import finders
+
+@login_required
+def generate_result_pdf(request, student_id, exam_id):
+    """Generate PDF result card using xhtml2pdf (Windows compatible)"""
+    
+    # Get student and exam data
+    student = get_object_or_404(Student, id=student_id)
+    exam = get_object_or_404(Examination, id=exam_id)
+    
+    # Get student's overall result
+    overall_result = StudentOverallResult.objects.filter(
+        student=student, 
+        examination=exam
+    ).first()
+    
+    if not overall_result:
+        messages.error(request, "No results found for this student in this exam.")
+        return redirect('result:view_results')
+    
+    # Get all subject results
+    subject_results = StudentResult.objects.filter(
+        student=student,
+        examination=exam
+    ).select_related('subject', 'exam_config').order_by('subject__name')
+    
+    # School information
+    school_info = {
+        'name': 'Siddhartha Academy',
+        'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+        'phone': '01- 6615178'
+    }
+    
+    # Context data
+    context = {
+        'student': student,
+        'exam': exam,
+        'overall_result': overall_result,
+        'subject_results': subject_results,
+        'school_info': school_info,
+        'attendance_days': 59,
+        'total_days': 67,
+        'current_date': exam.date,
+    }
+    
+    # Get template and render HTML
+    template = get_template('ResultManagement/result_card_pdf.html')
+    html_string = template.render(context)
+    
+    # Create PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(
+        BytesIO(html_string.encode("UTF-8")), 
+        result,
+        encoding='UTF-8'
+    )
+    
+    if not pdf.err:
+        filename = f"result_card_{student.first_name}_{student.last_name}_{student.roll_number}.pdf"
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse("Error generating PDF", status=500)
+
+def generate_pdf_xhtml2pdf(request, context):
+    """Alternative PDF generation using xhtml2pdf"""
+    template = get_template('ResultManagement/result_card_pdf.html')
+    html_string = template.render(context)
+    
+    # Create PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="result_card_{context["student"].roll_number}_{context["exam"].name}.pdf"'
+        return response
+    
+    return HttpResponse("Error generating PDF", status=500)
+
+@login_required
+def view_result_html(request, student_id, exam_id):
+    """View result card as HTML (for testing/preview)"""
+    
+    student = get_object_or_404(Student, id=student_id)
+    exam = get_object_or_404(Examination, id=exam_id)
+    
+    overall_result = StudentOverallResult.objects.filter(
+        student=student, 
+        examination=exam
+    ).first()
+    
+    if not overall_result:
+        return HttpResponse("No results found for this student in this exam.", status=404)
+    
+    subject_results = StudentResult.objects.filter(
+        student=student,
+        examination=exam
+    ).select_related('subject', 'exam_config').order_by('subject__name')
+    
+    school_info = {
+        'name': 'Siddhartha Academy',
+        'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+        'phone': '01- 6615178'
+    }
+    
+    context = {
+        'student': student,
+        'exam': exam,
+        'overall_result': overall_result,
+        'subject_results': subject_results,
+        'school_info': school_info,
+        'attendance_days': 59,
+        'total_days': 67,
+        'current_date': exam.date,
+    }
+    
+    return render(request, 'ResultManagement/result_card_pdf.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def generate_class_results_pdf(request, exam_id, class_id):
+    """Generate PDF for all students in a class"""
+    
+    examination = get_object_or_404(Examination, id=exam_id)
+    classroom = get_object_or_404(Class, id=class_id)
+    
+    # Get all students with results
+    students = Student.objects.filter(
+        classroom=classroom,
+        is_active=True,
+        overall_results__examination=examination
+    ).order_by('roll_number')
+    
+    if not students:
+        messages.error(request, "No students with results found for this class and exam.")
+        return redirect('result:view_results')
+    
+    # Create a ZIP file containing all PDFs
+    import zipfile
+    from django.http import HttpResponse
+    
+    zip_filename = f"{examination.name}_{classroom.name}_results.zip"
+    
+    # Create zip file in memory
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        
+        for student in students:
+            # Generate PDF for each student
+            overall_result = StudentOverallResult.objects.filter(
+                student=student, examination=examination
+            ).first()
+            
+            if overall_result:
+                subject_results = StudentResult.objects.filter(
+                    student=student, examination=examination
+                ).select_related('subject', 'exam_config').order_by('subject__name')
+                
+                school_info = {
+                    'name': 'Siddhartha Academy',
+                    'address': 'Sallaghari,Srijana Nagar-Bhaktapur',
+                    'phone': '01- 6615178'
+                }
+                
+                context = {
+                    'student': student,
+                    'exam': examination,
+                    'overall_result': overall_result,
+                    'subject_results': subject_results,
+                    'school_info': school_info,
+                    'attendance_days': 59,
+                    'total_days': 67,
+                    'current_date': examination.date,
+                }
+                
+                template = get_template('ResultManagement/result_card_pdf.html')
+                html_string = template.render(context)
+    
+    zip_buffer.seek(0)
+    
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+    
+    return response

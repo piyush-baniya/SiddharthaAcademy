@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 
 class Contact(models.Model):
@@ -22,6 +23,7 @@ class Contact(models.Model):
 
 
 class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     full_name = models.CharField(max_length=200)
     email = models.EmailField(unique=True, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
@@ -62,7 +64,10 @@ class Class(models.Model):
         through='ClassSubject',
         related_name='classes'
     )
-
+    def active_student_count(self):
+        """Return count of active students in this class"""
+        return self.students.filter(is_active=True).count()
+    
     def __str__(self):
         if self.section:
             return f"{self.name} - {self.section}"
