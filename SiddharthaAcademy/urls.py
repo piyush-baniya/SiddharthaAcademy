@@ -10,6 +10,7 @@ urlpatterns = [
     path("manage/", include('management.urls')),
     path("exam/", include('ExamManagement.urls')),
     path('auth/', include('Authentication.urls')),
+    path('result/', include('ResultManagement.urls')),
 ]
 
 
